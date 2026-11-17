@@ -1,187 +1,233 @@
-<title>Миссии Сан-Козлоса</title>
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Миссии: Лос-Сантос</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#f4f5f7">
+<meta name="theme-color" content="#0b0c0f">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap">
 <style>
-/* Base: tokens, layout, shared components.
-   Layout: one screen, max ~1040px wide, calm light page with white cards; built for an 11" tablet, works on phones.
-   Tone: a clean study tool, not a toy — one accent colour, flat buttons, small radii; colour is reserved for the diagrams. */
+/* Base: tokens, stage, shared components.
+   Look: Los Santos at dusk, a San Andreas-style HUD — near-black panels, Grove-green actions, gold highlights, orange sunset.
+   Layout: the app is ONE fixed screen (#stage, scaled by core.js to a 1440x810 design box). Nothing scrolls. */
 :root{
-  --sky:#f4f5f7; --sky-2:#eaecf0; --sky-3:#dde1e8; --dusk:#f4f5f7; --skyline:#e7eaf0;
-  --accent:#2b4acb; --accent-deep:#1f379c; --accent-soft:#e9edfb;
-  --sun:#f0a35e; --sun-deep:#b4581a; --pink:#df5f7e; --pink-2:#f8d6de;
-  --mint:#5dbfa7; --mint-deep:#1d7a66; --lemon:#fde8a0; --violet:#8f9be6;
-  --paper:#ffffff; --paper-2:#f3f5f8; --paper-3:#dde2ea; --slot-bg:#ffffff; --line:#e3e7ee;
-  --ink:#1b2230; --ink-soft:#5b6476;
-  --on-sky:#1b2230; --on-sky-soft:#5b6476;
+  --sky:#0a0b0e; --sky-2:#14171c; --sky-3:#232831;
+  --accent:#3f9f45; --accent-deep:#2f7e35; --accent-soft:rgba(63,159,69,.16);
+  --gold:#f0b73e; --gold-deep:#c48a14; --orange:#ff7a2f;
+  --sun:#ff9b3d; --sun-deep:#c4631a; --pink:#e5566f; --pink-2:#5a2230;
+  --mint:#4fc08d; --mint-deep:#43b97a; --lemon:#f0b73e; --violet:#9486ec;
+  --paper:#14171c; --paper-2:#1d2128; --paper-3:#323945; --slot-bg:#14171c; --line:#2a303a;
+  --ink:#eceae4; --ink-soft:#9ba3ae;
+  --on-sky:#eceae4; --on-sky-soft:#9ba3ae;
   --grass:#a8dc7a; --grass-line:#8cc562; --fence:#8a4f22; --post:#5b3214;
-  --display:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:"Oswald","Arial Narrow",Impact,sans-serif;
   --body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --shadow:0 1px 2px rgba(16,24,40,.05),0 2px 8px rgba(16,24,40,.05);
-  color-scheme:light;
+  --shadow:0 2px 0 rgba(0,0,0,.6),0 10px 24px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+/* light "map paper" for pictures: diagrams, scenes, clocks keep dark ink on a warm sheet */
+.dia,.tscene,.pen-svg,.paper-map{
+  --paper:#f4eddb; --paper-2:#e9dfc6; --paper-3:#cdbf9d; --slot-bg:#fbf7ea; --line:#d9cdb0;
+  --ink:#241d10; --ink-soft:#6a5f48; --on-sky:#241d10;
+  color:var(--ink);
 }
 *{box-sizing:border-box}
-body{margin:0}
+html,body{margin:0; height:100%; overflow:hidden; background:#07080a; overscroll-behavior:none; touch-action:manipulation}
 img{max-width:100%}
 [hidden]{display:none!important}
-:root{padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
-html,body{min-height:100%}
-body{background:var(--sky); color:var(--on-sky); font-family:var(--body); font-size:18px; line-height:1.45; font-variant-numeric:tabular-nums}
-.skyline{position:fixed; left:0; right:0; bottom:0; height:110px; pointer-events:none; z-index:0; opacity:.7}
-.skyline svg{width:100%; height:100%; display:block}
-.app{position:relative; z-index:1; max-width:1040px; margin:0 auto; padding-block:20px 130px;
-  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
-  display:flex; flex-direction:column; gap:18px}
-h1,h2,h3{font-family:var(--display); font-weight:700; line-height:1.15; letter-spacing:-.01em; text-wrap:balance; margin:0}
+body{color:var(--ink); font-family:var(--body); font-size:18px; line-height:1.4; font-variant-numeric:tabular-nums; -webkit-user-select:none; user-select:none}
+textarea,input{-webkit-user-select:text; user-select:text}
+
+/* the stage: sunset sky, skyline and palms behind a HUD */
+#stage{position:fixed; left:0; top:0; transform-origin:0 0; overflow:hidden;
+  background:
+    radial-gradient(ellipse 60% 45% at 78% 100%, rgba(255,122,47,.55) 0, rgba(255,122,47,0) 70%),
+    radial-gradient(ellipse 70% 40% at 20% 100%, rgba(229,86,111,.28) 0, rgba(229,86,111,0) 70%),
+    linear-gradient(180deg,#0a0b10 0%,#14121c 45%,#2a1a24 78%,#4a2420 100%)}
+#stage::after{content:''; position:absolute; inset:0; pointer-events:none; z-index:3;
+  background:radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,.55) 100%)}
+.bg{position:absolute; left:0; right:0; bottom:0; height:300px; pointer-events:none; z-index:0}
+.bg svg{width:100%; height:100%; display:block}
+.bg .sk{fill:#0d0b12; opacity:.92}
+.bg .palm{fill:#0a090e; stroke:#0a090e; stroke-width:5; stroke-linecap:round; stroke-linejoin:round}
+.app{position:absolute; inset:0; z-index:1; padding:16px 28px 20px; display:flex; flex-direction:column; gap:12px; overflow:hidden}
+.app > *{flex-shrink:0}
+.app > .fill{flex:1 1 0; min-height:0; flex-shrink:1}
+
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.1; letter-spacing:.03em; text-transform:uppercase; text-wrap:balance; margin:0}
 p{margin:0}
 button{font:inherit; color:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent}
-:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 55%,transparent); outline-offset:2px}
+:focus-visible{outline:3px solid var(--gold); outline-offset:2px}
 
-/* buttons */
-.btn{border:0; border-radius:10px; padding:12px 20px; background:var(--accent); color:#fff;
-  font-family:var(--display); font-weight:600; font-size:18px; transition:background .12s, transform .08s; min-height:52px}
-.btn:hover{background:var(--accent-deep)}
-.btn:active{transform:translateY(1px)}
-.btn[disabled]{opacity:.45; pointer-events:none}
-.btn.mint{background:var(--mint-deep)}
-.btn.ghost{background:var(--paper); color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--paper-3)}
-.btn.ghost:hover{background:var(--paper-2)}
-.row{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
+/* buttons: flat green slabs, gold when hot */
+.btn{border:0; border-radius:4px; padding:10px 22px; background:var(--accent); color:#fff; font-family:var(--display); font-weight:600; font-size:20px;
+  letter-spacing:.06em; text-transform:uppercase; transition:background .12s, transform .08s; min-height:50px; box-shadow:0 3px 0 rgba(0,0,0,.55)}
+.btn:hover{background:#4cb352}
+.btn:active{transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.55)}
+.btn[disabled]{opacity:.4; pointer-events:none}
+.btn.mint{background:var(--accent)}
+.btn.ghost{background:var(--paper-2); color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--paper-3), 0 3px 0 rgba(0,0,0,.55)}
+.btn.ghost:hover{background:var(--paper-3)}
+.row{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
 
 /* top bar + stepper */
-.topbar{display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px}
-.back{border:1.5px solid var(--paper-3); background:var(--paper); border-radius:10px; padding:8px 14px; font-weight:600; min-height:44px; color:var(--ink)}
-.topbar-title{font-family:var(--display); font-weight:700; font-size:19px; color:var(--on-sky)}
-.fs-btn{margin-left:auto; display:inline-flex; align-items:center; gap:8px; border:1.5px solid var(--paper-3); background:var(--paper); color:var(--ink); border-radius:10px; padding:8px 14px; font-weight:600; font-size:16px; min-height:44px}
+.topbar{display:flex; align-items:center; gap:10px 14px; flex:none; min-height:46px}
+.back{border:0; background:rgba(0,0,0,.5); border-radius:4px; padding:6px 16px; font-family:var(--display); font-weight:600; font-size:17px; letter-spacing:.06em; text-transform:uppercase; min-height:44px; color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--paper-3)}
+.back:hover{background:rgba(255,255,255,.08)}
+.topbar-title{font-family:var(--display); font-weight:700; font-size:26px; letter-spacing:.05em; text-transform:uppercase; color:#fff; text-shadow:0 2px 0 #000, 0 0 14px rgba(0,0,0,.6)}
+.fs-btn{margin-left:auto; display:inline-flex; align-items:center; gap:8px; border:0; background:rgba(0,0,0,.5); color:var(--ink); border-radius:4px; padding:6px 14px; font-weight:600; font-size:15px; min-height:44px; box-shadow:inset 0 0 0 1.5px var(--paper-3)}
 .fs-btn span[aria-hidden]{font-size:18px; line-height:1}
-.stepper{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:4px; counter-reset:st}
+.topbar .stepper{margin-left:auto}
+.topbar .stepper + .fs-btn{margin-left:0}
+.stepper{list-style:none; margin:0; padding:0; display:flex; flex-wrap:nowrap; gap:4px; counter-reset:st}
 .stepper li{counter-increment:st; display:flex}
-.stepper li > *{display:inline-flex; align-items:center; gap:8px; padding:6px 12px 6px 6px; border-radius:999px; font-weight:600; font-size:15px; color:var(--ink-soft); border:0; background:transparent; min-height:40px}
-.stepper li > *::before{content:counter(st); width:24px; height:24px; border-radius:50%; display:grid; place-items:center; font-size:13px; background:var(--sky-2); color:var(--ink-soft)}
-.stepper li.past > *::before{content:'✓'; background:var(--mint-deep); color:#fff}
-.stepper li.now > *{background:var(--paper); color:var(--ink); box-shadow:var(--shadow)}
-.stepper li.now > *::before{background:var(--accent); color:#fff}
-.stepper button:hover{background:var(--paper); color:var(--ink)}
+.stepper li > *{display:inline-flex; align-items:center; gap:8px; padding:5px 12px 5px 6px; border-radius:4px; font-family:var(--display); font-weight:500; font-size:15px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); border:0; background:rgba(0,0,0,.4); min-height:38px; white-space:nowrap}
+.stepper li > *::before{content:counter(st); width:24px; height:24px; border-radius:3px; display:grid; place-items:center; font-size:14px; background:var(--sky-3); color:var(--ink-soft)}
+.stepper li.past > *::before{content:'✓'; background:var(--accent); color:#fff}
+.stepper li.now > *{background:var(--gold); color:#16120a}
+.stepper li.now > *::before{background:#16120a; color:var(--gold)}
+.stepper button:hover{background:rgba(255,255,255,.1); color:var(--ink)}
 
-/* card */
-.card{background:var(--paper); color:var(--ink); border-radius:16px; padding:22px; box-shadow:var(--shadow); border:1px solid var(--line); display:flex; flex-direction:column; gap:16px; min-width:0}
-.card h2{font-size:24px}
-.tip{color:var(--on-sky-soft); font-weight:500; max-width:66ch}
-.q{font-size:24px; color:var(--on-sky)}
-.eyebrow{text-transform:uppercase; letter-spacing:.08em; font-weight:700; font-size:12px; color:var(--ink-soft)}
+/* card: black HUD panel */
+.card{background:linear-gradient(180deg,rgba(24,27,33,.96),rgba(15,17,21,.96)); color:var(--ink); border-radius:6px; padding:18px 22px; box-shadow:var(--shadow); border:1px solid var(--line); border-top:3px solid var(--accent); display:flex; flex-direction:column; gap:12px; min-width:0}
+.card h2{font-size:26px; color:#fff}
+.tip{color:var(--on-sky-soft); font-weight:500; max-width:70ch; font-size:17px}
+.q{font-size:26px; color:#fff; text-shadow:0 2px 0 #000}
+.eyebrow{text-transform:uppercase; letter-spacing:.14em; font-family:var(--display); font-weight:500; font-size:13px; color:var(--gold)}
 
 /* home */
-.hero{display:flex; gap:18px; align-items:center; padding-top:8px; flex-wrap:wrap}
-.hero-goat{font-size:44px; line-height:1; width:76px; height:76px; display:grid; place-items:center; border-radius:18px; background:var(--paper); box-shadow:var(--shadow); border:1px solid var(--line); flex:none}
-.hero-text{flex:1 1 360px; min-width:0}
-.hero .fs-btn{align-self:flex-start}
-.hero h1{font-size:clamp(28px,4.4vw,40px); color:var(--on-sky); margin:2px 0 8px}
-.lead{font-size:18px; max-width:60ch; color:var(--on-sky-soft); font-weight:500}
-.districts{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px}
-.district{border:1px solid var(--line); text-align:left; background:var(--paper); color:var(--ink); border-radius:16px; padding:20px; display:grid; grid-template-columns:auto 1fr; gap:4px 16px; align-items:start; box-shadow:var(--shadow); transition:border-color .12s, transform .1s}
-.district:hover{border-color:var(--paper-3)}
-.district:active{transform:translateY(1px)}
-.district .ico{font-size:28px; grid-row:span 3; line-height:1; width:52px; height:52px; display:grid; place-items:center; border-radius:12px; background:var(--paper-2)}
-.district h2{font-size:21px}
-.district p{color:var(--ink-soft); font-weight:500; font-size:16px}
-.district .meta{font-size:13px; font-weight:700; color:var(--mint-deep); text-transform:uppercase; letter-spacing:.06em; margin-top:4px}
-.district.main{grid-column:1/-1; background:var(--accent-soft); border-color:color-mix(in srgb,var(--accent) 25%,transparent)}
-.district.main .ico{background:var(--paper)}
-.district.main p{color:var(--ink)}
-.parents{background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:14px 20px; color:var(--on-sky)}
-.parents summary{font-weight:700; cursor:pointer; font-size:17px}
-.parents ul{margin:12px 0 0; padding-left:22px; display:grid; gap:8px; color:var(--on-sky-soft); font-weight:400; max-width:72ch}
-.parents b{color:var(--on-sky); font-weight:600}
+.hero{display:flex; gap:18px; align-items:center; flex:none}
+.hero-mark{width:62px; height:62px; display:grid; place-items:center; background:var(--accent); color:#fff; font-family:var(--display); font-weight:700; font-size:34px; border-radius:4px; box-shadow:0 3px 0 rgba(0,0,0,.6); flex:none}
+.hero-text{flex:1; min-width:0}
+.hero h1{font-size:44px; color:#fff; margin:0; text-shadow:0 3px 0 #000, 0 0 22px rgba(0,0,0,.7); letter-spacing:.05em}
+.hero h1 em{font-style:normal; color:var(--gold)}
+.lead{font-size:16px; color:var(--on-sky-soft); font-weight:500; margin-top:2px; max-width:80ch}
+.hero .fs-btn{margin-left:0}
+.districts{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-auto-rows:minmax(0,1fr); gap:12px; flex:1 1 0; min-height:0}
+.district{border:0; text-align:left; background:linear-gradient(180deg,rgba(26,30,37,.95),rgba(14,16,20,.95)); color:var(--ink); border-radius:6px; padding:16px 18px; display:flex; flex-direction:column; gap:6px; align-items:flex-start; justify-content:flex-start;
+  box-shadow:var(--shadow), inset 0 0 0 1px var(--line); transition:box-shadow .12s, transform .1s; position:relative; overflow:hidden; min-height:0}
+.district::before{content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--accent)}
+.district:hover{box-shadow:var(--shadow), inset 0 0 0 1.5px var(--gold)}
+.district:active{transform:translateY(2px)}
+.district .ico{font-size:32px; line-height:1; width:54px; height:54px; display:grid; place-items:center; border-radius:4px; background:rgba(255,255,255,.07); flex:none}
+.district h2{font-size:23px; color:#fff}
+.district p{color:var(--ink-soft); font-weight:500; font-size:15px; line-height:1.3}
+.district .meta{font-family:var(--display); font-size:14px; font-weight:500; color:var(--gold); text-transform:uppercase; letter-spacing:.1em; margin-top:auto}
+.district.main{grid-column:span 2; background:linear-gradient(135deg,rgba(63,159,69,.5),rgba(15,17,21,.96) 70%)}
+.district.main::before{background:var(--gold)}
+.district.main h2{font-size:32px}
+.district.main p{color:var(--ink); font-size:17px}
+.parents{position:static}
+.parents summary{list-style:none; cursor:pointer; display:inline-flex; align-items:center; min-height:44px; padding:6px 14px; border-radius:4px; background:rgba(0,0,0,.5); box-shadow:inset 0 0 0 1.5px var(--paper-3); font-family:var(--display); font-weight:500; font-size:15px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink)}
+.parents summary::-webkit-details-marker{display:none}
+.parents[open] ul{position:absolute; z-index:5; right:28px; top:84px; width:min(720px,calc(100% - 56px)); margin:0; padding:20px 26px 20px 44px; display:grid; gap:8px; background:rgba(10,11,14,.98); border:1px solid var(--line); border-top:3px solid var(--gold); border-radius:6px; box-shadow:0 20px 60px rgba(0,0,0,.7); color:var(--ink-soft); font-size:16px; line-height:1.35}
+.parents b{color:#fff; font-weight:600}
 
 /* rule + expression */
 .rule{font-size:19px; font-weight:500}
-.rule b{font-weight:700}
-.expr{font-family:var(--display); font-weight:700; font-size:clamp(36px,6vw,56px); text-align:center; color:var(--ink); letter-spacing:.01em}
-.expr .qm{color:var(--accent)}
-.trap{background:var(--pink-2); border-radius:12px; padding:12px 16px; font-weight:500}
-.steps{display:flex; flex-direction:column; gap:8px; margin:0; padding:0; list-style:none}
-.steps li{background:var(--paper-2); border-radius:10px; padding:10px 14px; font-weight:600; font-size:18px; animation:pop .4s}
-.calc-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,340px); gap:20px; align-items:start}
+.rule b{font-weight:700; color:#fff}
+.expr{font-family:var(--display); font-weight:600; font-size:clamp(34px,5vw,52px); text-align:center; color:#fff; letter-spacing:.04em; text-shadow:0 3px 0 #000}
+.expr .qm{color:var(--gold)}
+.trap{background:var(--pink-2); border-left:4px solid var(--pink); border-radius:4px; padding:10px 14px; font-weight:500}
+.steps{display:flex; flex-direction:column; gap:6px; margin:0; padding:0; list-style:none}
+.steps li{background:var(--paper-2); border-left:3px solid var(--gold); border-radius:4px; padding:8px 12px; font-weight:600; font-size:17px; animation:pop .4s}
+.calc-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,320px); gap:18px; align-items:start}
 .calc-grid > *{min-width:0}
 
-/* keypad */
-.pad{background:var(--paper-2); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px}
-.pad-label{font-weight:700; color:var(--ink-soft); font-size:14px; text-transform:uppercase; letter-spacing:.06em}
-.pad-display{height:60px; border-radius:10px; background:var(--slot-bg); border:2px solid var(--ink); font-family:var(--display); font-weight:700; font-size:32px; display:flex; align-items:center; justify-content:center; color:var(--ink)}
-.pad-keys{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
-.key{border:1px solid var(--line); height:60px; border-radius:10px; background:var(--paper); color:var(--ink); font-family:var(--display); font-weight:600; font-size:24px}
-.key:active{background:var(--sky-2)}
-.key-soft{background:var(--sky-2)}
-.key-go{background:var(--accent); color:#fff; font-size:17px; border-color:var(--accent)}
+/* keypad: phone-dial slabs */
+.pad{background:rgba(0,0,0,.4); border:1px solid var(--line); border-radius:6px; padding:12px; display:flex; flex-direction:column; gap:8px}
+.pad-label{font-family:var(--display); font-weight:500; color:var(--gold); font-size:14px; letter-spacing:.12em; text-transform:uppercase}
+.pad-display{height:54px; border-radius:4px; background:#050607; border:2px solid var(--paper-3); font-family:var(--display); font-weight:600; font-size:32px; letter-spacing:.1em; display:flex; align-items:center; justify-content:center; color:var(--gold); text-shadow:0 0 12px rgba(240,183,62,.5)}
+.pad-keys{display:grid; grid-template-columns:repeat(3,1fr); gap:7px}
+.key{border:0; height:52px; border-radius:4px; background:var(--paper-2); color:#fff; font-family:var(--display); font-weight:600; font-size:25px; box-shadow:inset 0 0 0 1px var(--paper-3), 0 3px 0 rgba(0,0,0,.6)}
+.key:active{background:var(--paper-3); transform:translateY(2px); box-shadow:inset 0 0 0 1px var(--paper-3)}
+.key-soft{background:var(--sky-3)}
+.key-go{background:var(--accent); color:#fff; font-size:18px; letter-spacing:.05em; text-transform:uppercase; box-shadow:0 3px 0 rgba(0,0,0,.6)}
 .key-go:active{background:var(--accent-deep)}
 
-/* success */
+/* success: MISSION PASSED */
 .win{display:flex; gap:16px; align-items:center; flex-wrap:wrap}
-.win-goat{font-size:44px; line-height:1; width:72px; height:72px; display:grid; place-items:center; border-radius:16px; background:color-mix(in srgb,var(--mint) 20%,var(--paper)); animation:jump .9s ease-in-out 1}
-.win h2{font-size:26px}
-.check-line{font-family:var(--display); font-weight:600; font-size:20px; color:var(--mint-deep)}
-.dots-groups{display:flex; flex-wrap:wrap; gap:10px}
-.dot-group{display:grid; grid-template-columns:repeat(4,16px); gap:5px; padding:10px; border:2px solid var(--mint-deep); border-radius:10px; background:color-mix(in srgb,var(--mint) 20%,var(--paper))}
-.dot-group i{width:16px; height:16px; border-radius:50%; background:var(--mint-deep); display:block}
+.win-goat,.win-mark{font-size:38px; line-height:1; width:64px; height:64px; display:grid; place-items:center; border-radius:4px; background:var(--gold); color:#16120a; animation:jump .9s ease-in-out 1; flex:none}
+.win h2{font-size:34px; color:var(--gold); text-shadow:0 3px 0 #000; letter-spacing:.06em}
+.check-line{font-family:var(--display); font-weight:500; font-size:20px; letter-spacing:.04em; color:var(--mint)}
+.dots-groups{display:flex; flex-wrap:wrap; gap:8px}
+.dot-group{display:grid; grid-template-columns:repeat(4,14px); gap:4px; padding:8px; border:2px solid var(--mint-deep); border-radius:4px; background:rgba(79,192,141,.12)}
+.dot-group i{width:14px; height:14px; border-radius:50%; background:var(--mint-deep); display:block}
 
 /* album */
-.agrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px}
-.acard img{width:100%; border-radius:10px; border:1px solid var(--line); background:#fff}
-.acard .expr-small{font-family:var(--display); font-weight:700; font-size:20px}
-.acard .meta{font-size:14px; color:var(--ink-soft); font-weight:500}
-.empty{text-align:center; align-items:center; padding:40px 24px}
+.agrid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; flex:1 1 0; min-height:0; align-content:start}
+.acard{padding:12px; gap:8px}
+.acard img{width:100%; border-radius:4px; border:1px solid var(--line); background:#fff; max-height:150px; object-fit:contain}
+.acard .expr-small{font-family:var(--display); font-weight:600; font-size:20px; color:var(--gold)}
+.acard .meta{font-size:13px; color:var(--ink-soft); font-weight:500}
+.acard p{font-size:15px; line-height:1.3; max-height:4em; overflow:hidden}
+.empty{text-align:center; align-items:center; padding:40px 24px; margin:auto}
 .empty .big{font-size:52px}
 
-
-/* animation + responsive (shared) */
+/* animation (shared) */
 @keyframes bob{50%{transform:translateY(-8px) rotate(-3deg)}}
-@keyframes jump{30%{transform:translateY(-14px) rotate(-6deg)}60%{transform:translateY(0) rotate(3deg)}}
+@keyframes jump{30%{transform:translateY(-12px) rotate(-5deg)}60%{transform:translateY(0) rotate(3deg)}}
 @keyframes wiggle{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 @keyframes pop{0%{transform:scale(.92); opacity:.3}100%{transform:scale(1); opacity:1}}
 @keyframes pulse{50%{transform:scale(1.06)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
 
-@media (max-width:760px){
-  .districts,.schemas,.calc-grid,.own-grid{grid-template-columns:minmax(0,1fr)}
-  .story-text{font-size:20px}
-  .frame{grid-template-columns:repeat(5,40px); grid-template-rows:repeat(2,40px)}
-  .dot{width:30px; height:30px}
-  .seg{min-width:84px}
-  .fs-btn .fs-text{display:none}
-}
+/* topbar stays one line */
+.back,.topbar-title,.fs-btn,.stepper li > *{white-space:nowrap}
+.topbar .fs-text{display:none}
+.topbar .fs-btn{padding:6px 12px}
+.topbar-title{overflow:hidden; text-overflow:ellipsis; min-width:0}
+.topbar .stepper{gap:3px; min-width:0}
+.topbar .stepper li > *{padding:4px 10px 4px 5px; font-size:14px}
 
-/* mission list */
-.mgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px}
-.mtile{border:1px solid var(--line); text-align:left; background:var(--paper); color:var(--ink); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:6px; box-shadow:var(--shadow); min-height:140px}
-.mtile:hover{border-color:var(--paper-3)}
-.mtile .ico{font-size:26px; line-height:1; width:46px; height:46px; display:grid; place-items:center; border-radius:10px; background:var(--paper-2)}
-.mtile .num{font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft)}
-.mtile h3{font-size:18px}
-.mtile .ok{margin-top:auto; font-weight:600; color:var(--mint-deep); font-size:14px}
-.mtile.done{background:var(--paper-2)}
+/* pager (pages of a chapter) */
+.pg{display:flex; flex-direction:column; gap:12px; min-height:0}
+.pager{margin-top:auto; display:flex; align-items:center; gap:12px; padding-top:8px; flex:none}
+.pager .btn{min-width:130px}
+.pager .stepper{flex:1; justify-content:center; flex-wrap:nowrap; overflow:hidden}
+.pager .stepper li > *{cursor:pointer; background:rgba(0,0,0,.55)}
+.pager .stepper li.now > *{background:var(--gold)}
+.u-tabs{display:flex; flex-wrap:wrap}
+/* topbar steppers: only the current step shows its name, the others are numbered chips */
+.topbar .stepper li:not(.now) > *{font-size:0; gap:0; padding:4px 5px}
+.topbar .stepper li:not(.now) > *::before{font-size:14px}
+.topbar .topbar-title{flex:0 1 auto}
+
+/* mission list: 6 x 4 tiles on one screen */
+.mgrid{display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); grid-auto-rows:minmax(0,1fr); gap:10px; flex:1 1 0; min-height:0}
+.mtile{border:0; text-align:left; background:linear-gradient(180deg,rgba(26,30,37,.95),rgba(14,16,20,.95)); color:var(--ink); border-radius:6px; padding:10px 14px; display:grid; grid-template-columns:auto 1fr; grid-template-rows:auto 1fr auto; gap:2px 12px; align-items:center; box-shadow:var(--shadow), inset 0 0 0 1px var(--line); position:relative; overflow:hidden; min-height:0}
+.mtile::before{content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--paper-3)}
+.mtile:hover{box-shadow:var(--shadow), inset 0 0 0 1.5px var(--gold)}
+.mtile .ico{grid-row:1 / span 2; font-size:26px; line-height:1; width:44px; height:44px; display:grid; place-items:center; border-radius:4px; background:rgba(255,255,255,.07)}
+.mtile .num{font-family:var(--display); font-size:12px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); align-self:end}
+.mtile h3{font-size:16px; color:#fff; align-self:start; line-height:1.1}
+.mtile .ok{grid-column:1 / -1; font-family:var(--display); font-weight:500; letter-spacing:.06em; text-transform:uppercase; color:var(--mint); font-size:12px}
+.mtile.done::before{background:var(--accent)}
+.mtile.done{background:linear-gradient(180deg,rgba(40,70,44,.6),rgba(14,16,20,.95))}
 
 /* story */
 .story-card{flex-direction:row; align-items:flex-start; gap:18px; flex-wrap:wrap}
 .story-icon{font-size:40px; line-height:1; width:68px; height:68px; display:grid; place-items:center; border-radius:14px; background:var(--paper-2); flex:none}
 .story-body{flex:1 1 300px; display:flex; flex-direction:column; gap:18px; min-width:0}
 .story-text{font-size:23px; line-height:1.5; font-weight:500}
-.story-mini{padding:14px 18px; flex-direction:row; gap:14px; align-items:center; background:var(--paper-2); box-shadow:none}
+.story-mini{padding:8px 16px; flex-direction:row; gap:14px; align-items:center; background:var(--paper-2); box-shadow:none}
 .story-mini > div{display:flex; flex-direction:column; gap:2px; min-width:0}
-.story-mini .story-text{font-size:18px}
+.story-mini .story-text{font-size:17px; line-height:1.3}
 .story-mini .story-icon{font-size:24px; width:44px; height:44px; border-radius:10px; background:var(--paper)}
-.n{display:inline-block; background:var(--lemon); border-radius:6px; padding:0 6px; font-weight:700}
+.n{display:inline-block; background:var(--lemon); border-radius:6px; padding:0 6px; font-weight:700; color:#16120a}
 
 .feedback{background:var(--paper-2); color:var(--ink); border-radius:12px; padding:14px 18px; font-weight:500; font-size:18px; display:flex; flex-direction:column; gap:12px}
 .feedback.ok{background:color-mix(in srgb,var(--mint) 14%,var(--paper))}
 .feedback b{font-weight:700}
 
 /* the picture: objects or bars (see sceneDia) */
-.dia{display:flex; flex-direction:column; gap:8px; padding:16px; background:var(--paper-2); border-radius:14px; overflow-x:auto; min-height:110px; justify-content:center}
-.bar-row{display:flex; gap:4px; min-height:84px}
+.dia{display:flex; flex-direction:column; gap:6px; padding:10px 14px; background:var(--paper-2); border-radius:14px; overflow-x:auto; min-height:90px; justify-content:center}
+.bar-row{display:flex; gap:4px; min-height:64px}
 .seg{--c:var(--paper-3); flex-basis:0; min-width:96px; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:8px; background:var(--c); color:var(--ink); transition:flex-grow .9s cubic-bezier(.2,.8,.2,1)}
 .seg-whole{--c:var(--violet)}
 .seg-a,.seg-small,.seg-box{--c:var(--mint)}
@@ -206,7 +252,7 @@ button{font:inherit; color:inherit; cursor:pointer; -webkit-tap-highlight-color:
 .slot-label:empty{display:none}
 .slot-val{min-width:60px; height:44px; padding:0 10px; display:flex; align-items:center; justify-content:center; border-radius:8px; background:var(--paper); border:2px solid var(--ink); font-family:var(--display); font-weight:700; font-size:24px}
 .slot-val:empty{visibility:hidden}
-.slot-val.q,.slot-val.ans{background:var(--lemon)}
+.slot-val.q,.slot-val.ans{background:var(--lemon); color:#16120a}
 .slot-val.ans{animation:pop .6s}
 .dia.obj .slot-val{min-width:44px; height:32px; font-size:18px; border-width:1.5px}
 .box-val{font-family:var(--display); font-weight:700; font-size:18px; color:var(--ink)}
@@ -268,17 +314,13 @@ button{font:inherit; color:inherit; cursor:pointer; -webkit-tap-highlight-color:
 .ms{display:flex;flex-direction:column;gap:6px;background:var(--paper-2);border-radius:10px;padding:10px}
 .ms-row{display:flex;gap:4px}
 .ms-row i{height:16px;border-radius:4px;display:block;min-width:8px}
-.ms .v{background:var(--violet)}
-.ms .m{background:var(--mint)}
-.ms .s{background:var(--sun)}
+.ms .v{background:var(--violet); color:#16120a}
+.ms .m{background:var(--mint); color:#16120a}
+.ms .s{background:var(--sun); color:#16120a}
 .ms .g{background:repeating-linear-gradient(45deg,var(--pink) 0 6px,var(--pink-2) 6px 12px)}
 .ms .d{background:transparent;box-shadow:inset 0 0 0 2px var(--ink-soft)}
 
-@media (max-width:760px){
-  .answers{grid-template-columns:minmax(0,1fr)} .beat{font-size:19px}
-  .answers.three{grid-template-columns:minmax(0,1fr)}
-  .sch-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-}
+
 
 /* drawing */
 .own-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:20px}
@@ -292,6 +334,23 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 .tool{border:0; background:var(--paper-2); border-radius:8px; padding:8px 14px; font-weight:600; min-height:42px; color:var(--ink)}
 .tool.on{background:var(--ink); color:var(--paper)}
 
+/* two-column screens: the picture + the action on the left, the explanation beside it */
+.cols{display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:12px; align-items:start}
+.cols.one{grid-template-columns:minmax(0,1fr)}
+.cols > *{min-width:0}
+.side-note .schema-name{background:none; padding:0}
+.calc-card{padding:14px 18px}
+.calc-grid{grid-template-columns:minmax(0,1fr) 300px; gap:18px}
+.calc-left{display:flex; flex-direction:column; gap:10px; min-width:0}
+.calc-left .expr{font-size:44px}
+.win-card .win h2{font-size:30px}
+.story-mini .eyebrow{display:none}
+.own-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px}
+.own-grid textarea{min-height:0; height:300px}
+canvas#draw{aspect-ratio:8/5; max-height:300px; width:auto; margin:0 auto; border-radius:4px}
+.tools{justify-content:center}
+.swatch{border-color:var(--paper)}
+
 /* tens: "Без пальцев" — bus with 10 seats. Everything scoped under .tens-head / .tens-card */
 .tens-head{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px}
 .tens-ctl{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
@@ -300,12 +359,12 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 .seg-ctl button.on{background:var(--paper); color:var(--ink); box-shadow:0 1px 3px rgba(16,24,40,.14)}
 .show-btn{border:1.5px solid var(--accent); background:transparent; color:var(--accent); border-radius:14px; padding:10px 16px; font-weight:700; min-height:48px}
 
-.tens-card{--seat:54px; --o:var(--sun); --n:var(--mint); --x:var(--pink); gap:14px}
+.tens-card{--seat:66px; --o:var(--sun); --n:var(--mint); --x:var(--pink); gap:14px}
 .tens-q{font-family:var(--display); font-weight:700; font-size:clamp(36px,6vw,56px); text-align:center; line-height:1}
 .tens-card .qa{color:var(--sun-deep)}
 .tens-card .qb{color:var(--mint-deep)}
 .tens-card.sub .qb{color:#d23a6c}
-.tens-card .qr{background:var(--lemon); border-radius:10px; padding:0 8px}
+.tens-card .qr{background:var(--lemon); border-radius:10px; padding:0 8px; color:#16120a}
 .tens-card .qm{color:var(--ink-soft)}
 .tens-card .ans{color:var(--mint-deep)}
 
@@ -314,7 +373,7 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 .tscene.demo .street, .tscene.demo .depot{pointer-events:none}
 .watch{position:absolute; top:10px; right:12px; background:var(--ink); color:var(--lemon); font-weight:700; border-radius:999px; padding:6px 14px; font-size:17px; z-index:3; animation:pulse 1.6s ease-in-out infinite}
 .depot{display:flex; flex-wrap:wrap; gap:8px; min-height:62px; align-items:center; padding:6px 8px 12px; border-radius:12px; border:3px dashed color-mix(in srgb,var(--ink-soft) 35%,transparent)}
-.mini{position:relative; width:84px; height:44px; border-radius:8px 12px 6px 6px; background:var(--lemon); border:3px solid var(--sun-deep); display:flex; align-items:center; justify-content:center}
+.mini{position:relative; width:84px; height:44px; border-radius:8px 12px 6px 6px; background:var(--lemon); border:3px solid var(--sun-deep); display:flex; align-items:center; justify-content:center; color:#16120a}
 .mini b{font-family:var(--display); font-weight:700; font-size:24px; color:var(--ink)}
 .mini i{position:absolute; bottom:-9px; width:15px; height:15px; border-radius:50%; background:var(--ink); left:8px}
 .mini i + i{left:auto; right:8px}
@@ -325,7 +384,7 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 .bus{position:relative; display:flex; flex-direction:column; align-items:flex-start; padding-bottom:4px}
 .bus-sign{align-self:center; margin-bottom:-4px; min-width:64px; text-align:center; background:#231a3c; color:#ffb347; font-family:var(--display); font-weight:700; font-size:28px; line-height:1; padding:6px 12px; border-radius:10px 10px 0 0; border:3px solid var(--sun-deep); border-bottom:0; transition:background .3s,color .3s}
 .bus.full .bus-sign{background:var(--lemon); color:var(--ink); animation:pulse .8s ease-in-out 2}
-.bus-body{display:flex; gap:8px; background:var(--lemon); border:4px solid var(--sun-deep); border-radius:16px 34px 12px 12px; padding:10px}
+.bus-body{display:flex; gap:8px; background:var(--lemon); border:4px solid var(--sun-deep); border-radius:16px 34px 12px 12px; padding:10px; color:#16120a}
 .bus.full .bus-body{box-shadow:0 0 0 5px color-mix(in srgb,var(--lemon) 60%,transparent)}
 .seats{display:grid; grid-template-columns:repeat(5,var(--seat)); grid-auto-rows:var(--seat); gap:6px}
 .seat{border-radius:12px; background:#dff0ff; box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--sun-deep) 35%,transparent); display:flex; align-items:center; justify-content:center}
@@ -353,7 +412,7 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 .stop,.walk{display:flex; gap:12px; align-items:flex-end; padding-bottom:4px}
 .side-sign{display:flex; flex-direction:column; align-items:center; gap:2px; font-size:30px}
 .side-sign b{font-family:var(--display); font-weight:700; font-size:28px; min-width:52px; text-align:center; border-radius:12px; padding:4px 8px; color:#fff}
-.side-sign.plus b{background:var(--mint-deep)}
+.side-sign.plus b{background:var(--mint-deep); color:#16120a}
 .side-sign.minus b{background:#d23a6c}
 .queue{display:grid; grid-template-columns:repeat(5,var(--seat)); grid-auto-rows:var(--seat); gap:6px; min-height:var(--seat); min-width:calc(var(--seat) * 5 + 24px); align-content:end}
 .queue .pax{justify-self:center; align-self:center}
@@ -381,8 +440,8 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 @keyframes t-in{from{opacity:0; transform:translateY(10px)}to{opacity:1; transform:none}}
 .mpic{display:flex; align-items:flex-end; gap:6px}
 .mp-tens{display:flex; gap:3px}
-.mp-tens i{width:9px; height:34px; border-radius:3px; background:var(--lemon); border:2px solid var(--sun-deep)}
-.mp-bus{display:grid; grid-template-columns:repeat(5,13px); gap:3px; padding:4px; background:var(--lemon); border:2px solid var(--sun-deep); border-radius:6px}
+.mp-tens i{width:9px; height:34px; border-radius:3px; background:var(--lemon); border:2px solid var(--sun-deep); color:#16120a}
+.mp-bus{display:grid; grid-template-columns:repeat(5,13px); gap:3px; padding:4px; background:var(--lemon); border:2px solid var(--sun-deep); border-radius:6px; color:#16120a}
 .mp-bus i,.mp-extra i{width:13px; height:13px; border-radius:50%; background:#fff; display:block}
 .mp-extra{display:grid; grid-template-columns:repeat(5,13px); gap:3px}
 .mpic .k-o{background:var(--o)}
@@ -393,23 +452,21 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 .btn.big{font-size:24px; min-height:66px; padding:14px 34px}
 .btn.go{animation:pulse 1.6s ease-in-out infinite}
 
-@media (max-width:900px){ .tens-card{--seat:44px} }
-@media (max-width:760px){
-  .tens-card{--seat:34px; padding:16px}
-  .t-split{grid-template-columns:minmax(0,1fr)}
-  .tscene{padding:10px 10px 0}
-  .street{gap:14px}
-  .wheels i{width:22px; height:22px; border-width:4px}
-  .pax.next::after{font-size:26px}
-}
+
+
 .p-ico{width:40px; height:40px; border-radius:8px; background:#2f6fdb; color:#fff; font-family:var(--display); font-weight:700; font-size:26px; display:flex; align-items:center; justify-content:center; opacity:.8}
 
 /* pen */
-.pen-tasks{display:flex; flex-wrap:wrap; gap:8px}
-.pen-tasks button{border:2px solid var(--sky-3); background:transparent; color:var(--on-sky); border-radius:999px; padding:8px 16px; font-weight:700; min-height:44px}
-.pen-tasks button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
-.pen-tasks button.ok::after{content:" ✓"}
-.pen-svg{width:100%; max-width:100%; height:auto; display:block; border-radius:16px; background:var(--paper-2)}
+.pen-tasks{display:flex; flex-wrap:wrap; gap:6px; flex:none}
+.pen-tasks button{border:0; background:rgba(0,0,0,.5); color:var(--ink-soft); border-radius:4px; padding:6px 14px; font-family:var(--display); font-weight:500; font-size:15px; letter-spacing:.05em; text-transform:uppercase; min-height:40px; box-shadow:inset 0 0 0 1.5px var(--paper-3); white-space:nowrap}
+.pen-tasks button:hover{color:#fff}
+.pen-tasks button.on{background:var(--gold); color:#16120a; box-shadow:none}
+.pen-tasks button.ok::after{content:" ✓"; color:var(--mint)}
+.pen-tasks button.on.ok::after{color:#16120a}
+.pen-card{display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:22px; align-items:start; padding:16px 20px}
+.pen-left{display:flex; flex-direction:column; gap:10px; min-width:0}
+.pen-right{display:flex; flex-direction:column; gap:10px; min-width:0}
+.pen-svg{width:100%; max-width:100%; height:auto; display:block; border-radius:6px; background:var(--paper-2)}
 .pen-svg .lbl{font-family:var(--display); font-weight:700; font-size:17px; fill:var(--ink)}
 .pen-svg .lbl.done{fill:var(--mint-deep)}
 .dims{display:flex; flex-wrap:wrap; gap:18px; align-items:center}
@@ -439,14 +496,17 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 .sh-muted{color:var(--ink-soft); font-weight:700}
 .sh-intro,.sh-story{flex-direction:row; align-items:center; gap:18px; flex-wrap:wrap}
 .sh-intro > div:last-child,.sh-story > div:nth-child(2){flex:1 1 320px}
-.sh-story .eyebrow{color:var(--sun-deep)}
-.sh-note-msg{background:var(--lemon); border-radius:12px; padding:8px 12px; font-weight:700; margin-top:8px}
+.sh-story .eyebrow{color:var(--gold)}
+.sh-story{padding:12px 18px; gap:14px}
+.sh-story .sh-goat,.sh-intro .sh-goat{font-size:44px}
+.sh-story h2{font-size:22px}
+.sh-note-msg{background:var(--lemon); border-radius:12px; padding:8px 12px; font-weight:700; margin-top:8px; color:#16120a}
 
 /* task list */
 .sh-list{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px}
 .sh-task{border:0; background:var(--paper); color:var(--ink); border-radius:20px; padding:14px 18px; display:flex; align-items:center; gap:14px; text-align:left; box-shadow:0 0 0 1px var(--line); min-height:76px}
 .sh-task:active{transform:translateY(4px)}
-.sh-task.next{background:var(--lemon)}
+.sh-task.next{background:var(--lemon); color:#16120a}
 .sh-task.done .sh-num{background:var(--mint); color:var(--ink)}
 .sh-num{width:44px; height:44px; border-radius:50%; background:var(--ink); color:var(--paper); display:grid; place-items:center; font-family:var(--display); font-weight:700; font-size:20px; flex:none}
 .sh-task-body{display:flex; flex-direction:column}
@@ -459,12 +519,12 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 .sh-side{display:flex; flex-direction:column; gap:14px}
 
 /* shelf */
-.sh-items{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px}
-.sh-item{background:var(--paper-2); border-radius:18px; padding:10px; display:flex; flex-direction:column; align-items:center; gap:4px; border:3px solid transparent}
+.sh-items{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px}
+.sh-item{background:var(--paper-2); border-radius:6px; padding:8px; display:flex; flex-direction:column; align-items:center; gap:4px; border:3px solid transparent}
 .sh-item.has{border-color:var(--mint-deep); background:color-mix(in srgb,var(--mint) 22%,var(--paper))}
 .sh-emo{font-size:46px; line-height:1.1}
 .sh-name{font-weight:800; font-size:15px; text-align:center; line-height:1.15; min-height:34px; display:flex; align-items:center}
-.sh-price{font-family:var(--display); font-weight:700; font-size:19px; background:var(--lemon); border-radius:10px; padding:2px 10px}
+.sh-price{font-family:var(--display); font-weight:700; font-size:19px; background:var(--lemon); border-radius:10px; padding:2px 10px; color:#16120a}
 .sh-qty{display:flex; align-items:center; gap:10px; margin-top:4px}
 .sh-qty b{font-family:var(--display); font-weight:700; font-size:22px; min-width:22px; text-align:center}
 .sh-q{width:48px; height:48px; border:0; border-radius:14px; background:var(--paper); font-family:var(--display); font-weight:700; font-size:26px; box-shadow:0 2px 0 var(--paper-3); color:var(--ink)}
@@ -483,15 +543,15 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 
 /* feedback + bars */
 .sh-fb{background:var(--pink-2); border-radius:16px; padding:12px 16px; display:flex; flex-direction:column; gap:10px; font-weight:800; animation:wiggle .5s}
-.sh-lead{font-weight:700; color:var(--sun-deep)}
+.sh-lead{font-weight:700; color:var(--gold)}
 .sh-bars{display:flex; flex-direction:column; gap:6px}
 .sh-bar{display:flex; align-items:center; gap:8px}
 .sh-bar-l{flex:0 0 84px; font-size:14px; font-weight:800}
 .sh-bar-t{flex:1; display:flex; gap:2px; min-width:0}
 .sh-seg{font-style:normal; font-weight:700; font-size:14px; min-height:34px; display:grid; place-items:center; border-radius:6px; color:var(--ink); overflow:hidden; min-width:3px}
-.sh-seg.a{background:var(--lemon)}
-.sh-seg.b{background:var(--mint)}
-.sh-seg.c{background:var(--violet)}
+.sh-seg.a{background:var(--lemon); color:#16120a}
+.sh-seg.b{background:var(--mint); color:#16120a}
+.sh-seg.c{background:var(--violet); color:#16120a}
 .sh-seg.q{background:repeating-linear-gradient(45deg,var(--paper) 0 6px,var(--paper-3) 6px 12px); border:2px dashed var(--ink-soft)}
 
 /* equation boxes */
@@ -499,7 +559,7 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 .sh-tbox{background:var(--paper-2); border-radius:14px; padding:8px 14px; display:flex; flex-direction:column; min-width:96px; text-align:center}
 .sh-tbox small{font-weight:800; font-size:14px; color:var(--ink-soft)}
 .sh-tbox b{font-family:var(--display); font-weight:700; font-size:24px}
-.sh-tbox.q{background:var(--lemon)}
+.sh-tbox.q{background:var(--lemon); color:#16120a}
 .sh-op{font-family:var(--display); font-weight:700; font-size:28px}
 .sh-stepq{color:var(--ink); font-size:21px}
 .sh-win{display:flex; gap:14px; align-items:center}
@@ -531,17 +591,14 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 .sh-paidnote{display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-weight:700; color:var(--on-sky)}
 .sh-paidnote b{font-family:var(--display); font-weight:700}
 
-@media (max-width:760px){
-  .sh-list,.sh-pick{grid-template-columns:minmax(0,1fr)}
-  .sh-bar-l{flex-basis:64px}
-}
+
 
 /* units «Мастерская мер» */
 .u-tabs{position:sticky; top:0; z-index:2; padding:8px 0; background:color-mix(in srgb,var(--sky) 85%,transparent); backdrop-filter:blur(6px)}
 .tip-ink{color:var(--ink-soft); font-weight:700; font-size:16px}
 .muted{color:var(--ink-soft)}
 .picks.u-mp button{flex-direction:row; align-items:center; gap:8px; font-size:18px}
-.picks button.on{background:var(--lemon); box-shadow:0 2px 0 var(--sun-deep)}
+.picks button.on{background:var(--lemon); box-shadow:0 2px 0 var(--sun-deep); color:#16120a}
 .u-col{display:flex; flex-direction:column; gap:14px; min-width:0}
 .u-ok{color:var(--mint-deep)}
 .u-lesson{background:color-mix(in srgb,var(--mint) 22%,var(--paper)); border-radius:16px; padding:14px 18px; font-weight:700; font-size:18px; line-height:1.5; animation:pop .4s}
@@ -567,7 +624,7 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 .u-tried li{background:var(--paper-2); border-radius:12px; padding:6px 12px; font-weight:800}
 .u-formula{display:flex; flex-wrap:wrap; align-items:center; gap:10px}
 .u-chip{font-family:var(--display); font-weight:700; font-size:24px; border-radius:14px; padding:6px 16px}
-.u-chip.num{background:var(--lemon)} .u-chip.unit{background:var(--mint)} .u-chip.val{background:var(--violet); color:var(--paper)}
+.u-chip.num{background:var(--lemon); color:#16120a} .u-chip.unit{background:var(--mint); color:#16120a} .u-chip.val{background:var(--violet); color:var(--paper)}
 .u-kinds{display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px}
 .u-kind{background:var(--paper-2); border-radius:18px; padding:14px; display:flex; flex-direction:column; gap:4px}
 .u-kind .ico{font-size:34px; line-height:1}
@@ -583,32 +640,32 @@ canvas#draw{width:100%; aspect-ratio:8/5; max-width:100%; background:#fff; borde
 .u-lhead small{font-weight:700; color:var(--ink-soft); font-size:15px}
 .u-cells{display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); gap:2px; animation:pop .35s}
 .u-cell{border:0; height:54px; display:grid; place-items:center; font-weight:700; font-size:14px; font-style:normal; color:var(--ink); padding:0; min-width:0}
-.r0 .u-cell{background:var(--sun)} .r0 .u-cell:nth-child(even){background:#ffb27d}
-.r1 .u-cell{background:var(--mint)} .r1 .u-cell:nth-child(even){background:#8fe3cf}
+.r0 .u-cell{background:var(--sun); color:#16120a} .r0 .u-cell:nth-child(even){background:#ffb27d}
+.r1 .u-cell{background:var(--mint); color:#16120a} .r1 .u-cell:nth-child(even){background:#8fe3cf}
 .r2 .u-cell{background:var(--violet); color:var(--paper)} .r2 .u-cell:nth-child(even){background:#bcb1f6; color:var(--ink)}
 .u-cells .u-cell:first-child{border-radius:10px 0 0 10px} .u-cells .u-cell:last-child{border-radius:0 10px 10px 0}
 button.u-cell.on{outline:4px solid var(--ink); outline-offset:-4px}
 .u-funnel{display:block; width:100%; height:36px; margin:2px 0}
 .u-funnel polygon{fill:color-mix(in srgb,var(--lemon) 70%,transparent)}
 .u-eqs{display:flex; flex-wrap:wrap; gap:8px}
-.u-eqs span{background:var(--lemon); border-radius:12px; padding:6px 14px; font-family:var(--display); font-weight:700; font-size:18px}
+.u-eqs span{background:var(--lemon); border-radius:12px; padding:6px 14px; font-family:var(--display); font-weight:700; font-size:18px; color:#16120a}
 .u-blocks{display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end}
 .u-blocks i{font-style:normal; border-radius:8px; animation:pop .3s}
-.u-blocks .big{background:var(--sun); border:3px solid var(--sun-deep); padding:6px 10px; display:flex; flex-direction:column; align-items:center; min-width:88px}
+.u-blocks .big{background:var(--sun); border:3px solid var(--sun-deep); padding:6px 10px; display:flex; flex-direction:column; align-items:center; min-width:88px; color:#16120a}
 .u-blocks .big b{font-family:var(--display); font-weight:700; font-size:18px}
 .u-blocks .big small{font-weight:800; font-size:13px}
-.u-blocks .big.mcm{min-width:150px; background:var(--violet); border-color:var(--ink-soft)}
-.u-blocks .small{width:22px; height:22px; background:var(--mint); border:3px solid var(--mint-deep)}
+.u-blocks .big.mcm{min-width:150px; background:var(--violet); border-color:var(--ink-soft); color:#16120a}
+.u-blocks .small{width:22px; height:22px; background:var(--mint); border:3px solid var(--mint-deep); color:#16120a}
 
 /* area */
 .u-vs{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px}
 .u-vs-side{background:var(--paper-2); border-radius:18px; padding:16px; display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; font-weight:700}
 .u-big{font-family:var(--display); font-weight:700; font-size:26px}
 .u-sticks{display:flex; gap:3px; height:88px; align-items:center}
-.u-sticks i{width:40px; height:12px; border-radius:6px; background:var(--sun); border:2px solid var(--sun-deep)}
+.u-sticks i{width:40px; height:12px; border-radius:6px; background:var(--sun); border:2px solid var(--sun-deep); color:#16120a}
 .u-grid{--c:40px; display:grid; grid-template-columns:repeat(var(--w),var(--c)); grid-auto-rows:var(--c); gap:3px; justify-content:start}
 .u-grid i{border:2px dashed var(--ink-soft); border-radius:5px; background:color-mix(in srgb,var(--slot-bg) 60%,transparent)}
-.u-grid i.on{border:2px solid var(--mint-deep); background:var(--mint); border-radius:5px; animation:pop .25s both}
+.u-grid i.on{border:2px solid var(--mint-deep); background:var(--mint); border-radius:5px; animation:pop .25s both; color:#16120a}
 .u-grid.build,.u-grid.practice{padding:12px; background:var(--paper-2); border-radius:16px; justify-content:center; outline:4px solid var(--sun); outline-offset:-4px}
 .u-grid.dm{--c:24px; gap:2px}
 .u-dm{display:flex; flex-direction:column; gap:4px; align-items:flex-start; background:var(--paper-2); border-radius:16px; padding:14px; width:max-content; max-width:100%}
@@ -617,15 +674,15 @@ button.u-cell.on{outline:4px solid var(--ink); outline-offset:-4px}
 .u-two{display:flex; flex-direction:column; gap:8px; font-weight:700; font-size:18px}
 .u-two b{font-family:var(--display); font-weight:700; font-size:21px}
 .u-tag{display:inline-block; border-radius:10px; padding:2px 10px; font-weight:700; font-size:15px; margin-right:6px}
-.u-tag.len{background:var(--sun)} .u-tag.area{background:var(--mint)}
+.u-tag.len{background:var(--sun); color:#16120a} .u-tag.area{background:var(--mint); color:#16120a}
 
 /* compare */
 .u-cmp-head{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap}
 .u-count{font-weight:700; color:var(--ink-soft)}
 .u-cmp{display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap}
 .u-val{font-family:var(--display); font-weight:700; font-size:clamp(28px,5vw,44px); background:var(--paper-2); border-radius:18px; padding:12px 22px; text-align:center}
-.u-slot{width:78px; height:78px; border-radius:18px; border:3px dashed var(--ink-soft); display:grid; place-items:center; font-family:var(--display); font-weight:700; font-size:40px; background:var(--lemon)}
-.u-slot.ok{background:var(--mint); border-style:solid; border-color:var(--mint-deep)}
+.u-slot{width:78px; height:78px; border-radius:18px; border:3px dashed var(--ink-soft); display:grid; place-items:center; font-family:var(--display); font-weight:700; font-size:40px; background:var(--lemon); color:#16120a}
+.u-slot.ok{background:var(--mint); border-style:solid; border-color:var(--mint-deep); color:#16120a}
 .u-slot.bad{background:var(--pink-2); border-style:solid; border-color:var(--pink)}
 .u-signs{display:flex; flex-wrap:wrap; gap:12px; justify-content:center}
 .u-signs button{width:84px; height:76px; border:0; border-radius:18px; background:var(--paper-2); color:var(--ink); font-family:var(--display); font-weight:700; font-size:38px; box-shadow:0 2px 0 var(--paper-3)}
@@ -637,7 +694,7 @@ button.u-cell.on{outline:4px solid var(--ink); outline-offset:-4px}
 .u-bar .l{flex:0 0 100px; font-weight:700; font-size:15px}
 .u-bar .t{flex:1; display:flex; align-items:center; gap:8px; min-width:0}
 .u-bar .t i{height:30px; border-radius:6px; min-width:4px; flex:none}
-.u-bar .t i.a{background:var(--sun)} .u-bar .t i.b{background:var(--violet)}
+.u-bar .t i.a{background:var(--sun); color:#16120a} .u-bar .t i.b{background:var(--violet); color:#16120a}
 .u-bar .t b{font-weight:700; font-size:15px; white-space:nowrap}
 .u-apics{display:flex; flex-wrap:wrap; gap:18px}
 .u-apics > div{display:flex; flex-direction:column; gap:6px}
@@ -645,19 +702,9 @@ button.u-cell.on{outline:4px solid var(--ink); outline-offset:-4px}
 .u-apic{display:flex; flex-wrap:wrap; gap:6px}
 .u-ablk{display:grid; grid-template-columns:repeat(10,6px); grid-auto-rows:6px; gap:1px; padding:3px; background:var(--paper); border:2px solid var(--ink-soft); border-radius:4px}
 .u-ablk i{background:var(--paper-3)}
-.u-ablk i.on{background:var(--mint-deep)}
+.u-ablk i.on{background:var(--mint-deep); color:#16120a}
 
-@media (max-width:760px){
-  .u-tabs{position:static; background:none; backdrop-filter:none; padding:0}
-  .u-vs{grid-template-columns:minmax(0,1fr)}
-  .u-grid{--c:32px}
-  .u-grid.dm{--c:22px} .u-dm-top{grid-template-columns:repeat(10,22px)}
-  .u-cell{height:46px; font-size:12px}
-  .u-bar .l{flex-basis:64px}
-  .u-cmp{gap:8px; flex-wrap:nowrap}
-  .u-val{font-size:22px; padding:10px 12px; min-width:0}
-  .u-slot{width:56px; height:56px; font-size:30px; flex:none}
-}
+
 
 /* «Задачи на время» + «Стрелочные часы» (timekit/time/clock).
    Colour code: hours = orange (short hand), minutes = blue (long hand) — in clocks, digits, pads and columns alike. */
@@ -708,7 +755,7 @@ b.hr-c,b.mn-c{font-weight:700}
 .tk-word{font-weight:700; font-size:22px}
 .tk-explain{font-weight:500; font-size:18px; line-height:1.5}
 .tk-rules{display:flex; flex-wrap:wrap; gap:8px}
-.tk-rules span{background:var(--lemon); border-radius:12px; padding:6px 14px; font-weight:600; font-size:17px}
+.tk-rules span{background:var(--lemon); border-radius:12px; padding:6px 14px; font-weight:600; font-size:17px; color:#16120a}
 .tk-rules.wide span{font-family:var(--display); font-weight:700}
 .tk-btns{display:flex; flex-wrap:wrap; gap:8px}
 .tk-step-btn{border:1.5px solid var(--paper-3); background:var(--paper); border-radius:10px; padding:8px 12px; min-height:46px; font-weight:700; font-size:16px; color:var(--mn)}
@@ -835,7 +882,7 @@ b.hr-c,b.mn-c{font-weight:700}
 .tk-pairs{display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:4px}
 .tk-pairs div{background:var(--paper-2); border-radius:10px; padding:6px 2px; display:flex; flex-direction:column; align-items:center; font-family:var(--display); font-weight:700}
 .tk-pairs b{font-size:20px} .tk-pairs span{font-size:16px; color:var(--hr)} .tk-pairs em{font-style:normal; font-size:14px; color:var(--hr)}
-.tk-pairs div.z{background:var(--lemon)}
+.tk-pairs div.z{background:var(--lemon); color:#16120a}
 
 /* add track */
 .tk-track{display:flex; flex-direction:column; gap:6px}
@@ -874,8 +921,8 @@ b.hr-c,b.mn-c{font-weight:700}
 
 /* rewards + games */
 .tk-head-r{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
-.tk-stars{font-weight:700; font-size:17px; background:var(--lemon); border-radius:999px; padding:5px 12px; white-space:nowrap}
-.tk-star-pop{display:inline-block; font-size:.75em; background:var(--lemon); border-radius:999px; padding:2px 10px; vertical-align:middle; animation:jump .9s ease-in-out 1}
+.tk-stars{font-weight:700; font-size:17px; background:var(--lemon); border-radius:999px; padding:5px 12px; white-space:nowrap; color:#16120a}
+.tk-star-pop{display:inline-block; font-size:.75em; background:var(--lemon); border-radius:999px; padding:2px 10px; vertical-align:middle; animation:jump .9s ease-in-out 1; color:#16120a}
 .tk-huge{font-size:24px; min-height:72px; padding:14px 34px; border-radius:16px}
 .tk-huge.stop{background:var(--pink)}
 .tk-huge.stop:hover{background:#c94767}
@@ -884,7 +931,7 @@ b.hr-c,b.mn-c{font-weight:700}
 .tk-cmpbars{display:flex; flex-direction:column; gap:8px}
 .tk-cmpbars > div{display:grid; grid-template-columns:150px 1fr auto; gap:10px; align-items:center; font-weight:600; font-size:15px}
 .tk-cmpbars i{display:block; height:22px; border-radius:6px; background:var(--mn-soft); box-shadow:inset 0 0 0 2px var(--mn)}
-.tk-cmpbars i.you{background:var(--lemon); box-shadow:inset 0 0 0 2px var(--sun-deep); animation:pop .5s}
+.tk-cmpbars i.you{background:var(--lemon); box-shadow:inset 0 0 0 2px var(--sun-deep); animation:pop .5s; color:#16120a}
 .tk-ladder{display:flex; flex-wrap:wrap; align-items:center; gap:8px}
 .tk-ladder > div{background:var(--paper-2); border-radius:14px; padding:10px 14px; display:flex; flex-direction:column; gap:2px; flex:1 1 150px}
 .tk-ladder b{font-family:var(--display); font-size:20px}
@@ -905,7 +952,7 @@ b.hr-c,b.mn-c{font-weight:700}
 .tk-tlhelp{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:center; background:var(--paper-2); border-radius:14px; padding:12px}
 .tk-tlhelp p{font-weight:500; font-size:17px}
 .tk-riddle{font-size:21px; font-weight:500}
-.tk-toggle.hot{background:var(--lemon); border-color:var(--sun)}
+.tk-toggle.hot{background:var(--lemon); border-color:var(--sun); color:#16120a}
 .tk-timer{font-family:var(--display); font-weight:700; font-size:32px; min-width:64px; text-align:center; color:var(--accent); margin-left:auto}
 .tk-timer.low{color:var(--pink); animation:pulse 1s infinite}
 .tk-blitz-row{display:grid; grid-template-columns:minmax(0,280px) minmax(0,1fr); gap:20px; align-items:center}
@@ -914,25 +961,10 @@ b.hr-c,b.mn-c{font-weight:700}
 .tk-blitz-opts button.right{background:color-mix(in srgb,var(--mint) 35%,var(--paper)); box-shadow:inset 0 0 0 3px var(--mint-deep)}
 .tk-blitz-opts button.wrong{background:var(--pink-2); box-shadow:inset 0 0 0 3px var(--pink)}
 
-@media (max-width:760px){
-  .tk-pies{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .tk-tlhelp,.tk-blitz-row{grid-template-columns:minmax(0,1fr)}
-  .tk-cmpbars > div{grid-template-columns:96px 1fr auto; font-size:13px}
-  .tk-how-e{width:64px; height:64px; font-size:40px} .tk-how p{font-size:20px}
-  .tk-blitz-opts{flex-direction:row} .tk-blitz-opts button{flex:1; font-size:24px; min-height:60px}
-  .tk-two,.tk-play,.tk-bank,.tk-day{grid-template-columns:minmax(0,1fr)}
-  .tk-3q{grid-template-columns:minmax(0,1fr)}
-  .tk-row3{gap:6px} .tk-row3 b{font-size:17px} .tk-row3 small{font-size:12px}
-  .tk-ribbon{grid-template-columns:repeat(13,minmax(0,1fr)); row-gap:4px}
-  .tk-ribbon button{height:40px}
-  .tk-ribbon-cap{display:none}
-  .tk-pairs{grid-template-columns:repeat(6,minmax(0,1fr))}
-  .tk-fives{grid-template-columns:repeat(4,minmax(0,1fr))}
-  .tk-clockpicks{gap:6px} .tk-clockpicks button{padding:4px}
-  .tk-colgrid{font-size:24px}
-  .tk-story .rule{font-size:19px}
-  .tk-mbar{height:64px} .tk-mbar .seg{min-width:40px} .tk-mbar .seg b{font-size:15px}
-}
+
+
+/* keep pictures from growing with the width: the screen is short, not narrow */
+svg.tl{display:block; width:100%; max-height:200px}
 
 /* measures-learn styles (prefix ml-) */
 .ml-sec{min-width:0}
@@ -957,7 +989,7 @@ b.hr-c,b.mn-c{font-weight:700}
 .ml-vs-box.good{background:color-mix(in srgb,var(--mint) 30%,var(--paper))}
 .ml-objs,.ml-units,.ml-kindbar,.ml-pre{display:flex; flex-wrap:wrap; gap:8px}
 .ml-objs button,.ml-units button,.ml-kindbar button,.ml-pre button{border:0; border-radius:14px; background:var(--paper-2); color:var(--ink); font-family:var(--display); font-weight:700; font-size:17px; padding:8px 14px; min-height:48px; box-shadow:0 2px 0 var(--paper-3)}
-.ml-objs button.on,.ml-units button.on,.ml-kindbar button.on{background:var(--lemon); box-shadow:0 2px 0 var(--sun-deep)}
+.ml-objs button.on,.ml-units button.on,.ml-kindbar button.on{background:var(--lemon); box-shadow:0 2px 0 var(--sun-deep); color:#16120a}
 .ml-units button{display:flex; flex-direction:column; align-items:center; min-width:78px; font-size:22px}
 .ml-units button small{font-size:12px; opacity:.75}
 .ml-units.sm button{min-width:56px; font-size:19px; padding:6px 12px}
@@ -979,15 +1011,15 @@ b.hr-c,b.mn-c{font-weight:700}
 .ml-ex{font-weight:700; font-size:14px; line-height:1.25; min-width:0}
 .ml-gap{display:flex; align-items:center; justify-content:space-between; gap:6px; padding:3px 6px; font-weight:800; font-size:14px; flex-wrap:wrap}
 .ml-dn{background:var(--sun); color:var(--ink); border-radius:10px; padding:3px 10px; font-family:var(--display)}
-.ml-upx{background:var(--violet); border-radius:10px; padding:3px 10px; font-family:var(--display)}
+.ml-upx{background:var(--violet); border-radius:10px; padding:3px 10px; font-family:var(--display); color:#16120a}
 .ml-cap{color:var(--ink-soft); flex:1 1 auto; text-align:center; min-width:0}
 .ml-gap.mid .ml-cap{color:var(--ink)}
 .ml-pickrow{display:flex; flex-direction:column; gap:4px}
 .ml-pickrow>span{font-weight:700; color:var(--ink-soft); font-size:15px}
 .ml-chain{background:var(--paper-2); border-radius:18px; padding:14px; display:flex; flex-direction:column; gap:10px; align-items:flex-start; animation:pop .3s}
 .ml-eq{display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-family:var(--display); font-weight:700; font-size:22px}
-.ml-one{background:var(--mint); border-radius:12px; padding:4px 12px}
-.ml-f{font-style:normal; background:var(--lemon); border-radius:12px; padding:4px 12px}
+.ml-one{background:var(--mint); border-radius:12px; padding:4px 12px; color:#16120a}
+.ml-f{font-style:normal; background:var(--lemon); border-radius:12px; padding:4px 12px; color:#16120a}
 .ml-op{color:var(--ink-soft)}
 .ml-total{background:var(--violet); color:var(--paper); border-radius:12px; padding:4px 14px; overflow-wrap:anywhere}
 .ml-back,.ml-same{font-weight:700; color:var(--ink-soft); font-size:16px}
@@ -996,7 +1028,7 @@ b.hr-c,b.mn-c{font-weight:700}
 .ml-prefs{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px}
 .ml-pref{border-radius:18px; padding:14px; display:flex; flex-direction:column; gap:4px; min-width:0; background:var(--paper-2)}
 .ml-pp{font-family:var(--display); font-weight:700; font-size:28px}
-.ml-mk{font-family:var(--display); font-size:22px; align-self:flex-start; border-radius:12px; padding:2px 12px; background:var(--lemon)}
+.ml-mk{font-family:var(--display); font-size:22px; align-self:flex-start; border-radius:12px; padding:2px 12px; background:var(--lemon); color:#16120a}
 .ml-pt{font-weight:800; font-size:18px}
 .ml-pref small{font-weight:700; font-size:14px; color:var(--ink-soft); line-height:1.3}
 .ml-pref.p-km .ml-mk{background:var(--violet); color:var(--paper)}
@@ -1004,9 +1036,9 @@ b.hr-c,b.mn-c{font-weight:700}
 .ml-bar{display:flex; align-items:center; gap:10px}
 .ml-bl{width:52px; flex:none; font-family:var(--display); font-weight:700; font-size:18px}
 .ml-track{flex:1; min-width:0; height:22px; background:var(--paper-2); border-radius:8px; overflow:hidden}
-.ml-track i{display:block; height:100%; min-width:3px; background:var(--sun); border-radius:8px}
+.ml-track i{display:block; height:100%; min-width:3px; background:var(--sun); border-radius:8px; color:#16120a}
 .ml-eqs{display:flex; flex-wrap:wrap; gap:8px}
-.ml-eqs span{background:var(--lemon); border-radius:12px; padding:6px 14px; font-family:var(--display); font-weight:700; font-size:18px}
+.ml-eqs span{background:var(--lemon); border-radius:12px; padding:6px 14px; font-family:var(--display); font-weight:700; font-size:18px; color:#16120a}
 .ml-kilo{display:grid; grid-template-columns:1fr 1fr; gap:10px}
 .ml-kilo>div{background:var(--paper-2); border-radius:16px; padding:12px; display:flex; flex-direction:column; gap:4px; min-width:0}
 .ml-kilo b{font-family:var(--display); font-size:19px}
@@ -1014,28 +1046,21 @@ b.hr-c,b.mn-c{font-weight:700}
 
 /* fridge */
 .ml-fh{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px}
-.ml-print{border:0; border-radius:14px; background:var(--accent); color:var(--paper); font-weight:700; font-size:17px; padding:8px 16px; min-height:44px}
-.ml-fgrid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-.ml-fk{background:var(--paper-2); border-radius:16px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; min-width:0}
+.ml-print{border:0; border-radius:14px; background:var(--accent); color:#fff; font-weight:700; font-size:17px; padding:8px 16px; min-height:44px}
+.ml-fgrid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
+.ml-fk{background:var(--paper-2); border-radius:6px; padding:10px 12px; display:flex; flex-direction:column; gap:6px; min-width:0}
 .ml-fk h3{font-size:19px}
 .ml-fk h3 small{display:block; font-size:13px; color:var(--ink-soft); font-weight:700}
 .ml-chips{display:flex; flex-wrap:wrap; align-items:center; gap:3px}
-.ml-chip{display:inline-flex; align-items:center; gap:3px; background:var(--lemon); border-radius:10px; padding:2px 8px; font-size:15px}
+.ml-chip{display:inline-flex; align-items:center; gap:3px; background:var(--lemon); border-radius:10px; padding:2px 8px; font-size:15px; color:#16120a}
 .ml-chip b{font-family:var(--display)}
 .ml-arrow{font-weight:800; color:var(--ink-soft)}
 .ml-fk ul{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:3px; font-weight:700; font-size:16px}
 .ml-fk ul.far{border-top:2px dashed var(--paper-3); padding-top:6px}
 .ml-fk ul.far li{color:var(--accent-deep)}
 
-@media (max-width:760px){
-  .ml-fgrid,.ml-vs,.ml-kilo{grid-template-columns:1fr}
-  .ml-vs{grid-template-columns:1fr 1fr}
-  .ml-step{grid-template-columns:auto 1fr; padding:8px 10px}
-  .ml-step .ml-ex{grid-column:1 / -1}
-  .ml-eq{font-size:19px}
-  .ml-cap{font-size:12px}
-}
-@media (max-width:420px){ .ml-vs{grid-template-columns:1fr} .ml-step{width:calc(var(--w) + 0%); }}
+
+
 
 @media print{
   body:has(.fridge){background:#fff!important}
@@ -1051,7 +1076,7 @@ b.hr-c,b.mn-c{font-weight:700}
 /* measures-practice styles (prefix mp-) */
 .mp-kinds{display:flex; flex-wrap:wrap; gap:8px}
 .mp-kinds button{border:0; border-radius:14px; background:var(--paper-2); color:var(--ink); font-family:var(--display); font-weight:700; font-size:16px; padding:8px 14px; min-height:44px; box-shadow:0 2px 0 var(--paper-3)}
-.mp-kinds button.on{background:var(--lemon); box-shadow:0 2px 0 var(--sun-deep)}
+.mp-kinds button.on{background:var(--lemon); box-shadow:0 2px 0 var(--sun-deep); color:#16120a}
 
 /* ladder picture */
 .mp-lad{display:flex; align-items:stretch; justify-content:center; gap:2px; max-width:100%}
@@ -1059,7 +1084,7 @@ b.hr-c,b.mn-c{font-weight:700}
 .mp-chip b{font-family:var(--display); font-size:clamp(16px,4.6vw,22px)}
 .mp-chip span{font-size:clamp(11px,3vw,14px); font-weight:700; min-height:1.2em; overflow-wrap:anywhere; text-align:center}
 .mp-chip.on{background:var(--accent-soft); color:var(--ink); box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
-.mp-chip.from{background:var(--lemon)}
+.mp-chip.from{background:var(--lemon); color:#16120a}
 .mp-chip.to{background:color-mix(in srgb,var(--mint) 35%,var(--paper))}
 .mp-r{flex:0 0 auto; justify-content:center; width:clamp(22px,7vw,36px); display:flex; flex-direction:column; align-items:center; font-size:clamp(10px,2.8vw,13px); color:var(--ink-soft); line-height:1.1}
 .mp-r i{font-style:normal; font-size:clamp(12px,3.5vw,16px)}
@@ -1092,28 +1117,35 @@ div.mp-line{box-shadow:none}
 .mp-card{border:0; border-radius:14px; background:var(--paper-2); color:var(--ink); min-width:72px; min-height:64px; padding:8px 14px; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 2px 0 var(--paper-3); font-family:var(--display)}
 .mp-card b{font-size:20px; white-space:nowrap}
 .mp-card small{font-size:12px; font-weight:700; color:var(--ink-soft)}
-.mp-card.in{background:var(--lemon); box-shadow:0 2px 0 var(--sun-deep)}
+.mp-card.in{background:var(--lemon); box-shadow:0 2px 0 var(--sun-deep); color:#16120a}
 .mp-card.right{background:color-mix(in srgb,var(--mint) 35%,var(--paper)); box-shadow:inset 0 0 0 2px var(--mint-deep)}
 .mp-card.wrong{background:var(--pink-2); box-shadow:inset 0 0 0 2px var(--pink)}
 .mp-card[disabled]{cursor:default}
-@media (max-width:480px){
-  .mp-opt{min-width:72px; flex:1 1 72px}
-  .mp-slot,.mp-card{min-width:64px; flex:1 1 64px}
-}
+
 
 </style>
-<div class="skyline" aria-hidden="true">
-  <svg viewBox="0 0 1200 150" preserveAspectRatio="xMidYMax slice" style="fill:var(--skyline)">
-    <rect x="0" y="90" width="70" height="60"/><rect x="60" y="60" width="50" height="90"/><rect x="115" y="100" width="80" height="50"/>
-    <rect x="190" y="40" width="40" height="110"/><rect x="235" y="78" width="70" height="72"/><rect x="330" y="110" width="120" height="40"/>
-    <path d="M395 150 L395 70 Q392 60 380 58 M395 70 Q400 56 418 60 M395 70 Q384 66 372 74 M395 70 Q408 66 420 76" stroke="var(--skyline)" stroke-width="6" fill="none"/>
-    <rect x="470" y="55" width="60" height="95"/><rect x="535" y="85" width="45" height="65"/><rect x="590" y="25" width="36" height="125"/>
-    <rect x="630" y="95" width="90" height="55"/><rect x="740" y="70" width="55" height="80"/><rect x="800" y="105" width="110" height="45"/>
-    <path d="M860 150 L860 66 Q856 56 842 56 M860 66 Q866 52 884 56 M860 66 Q848 62 836 72 M860 66 Q874 62 886 72" stroke="var(--skyline)" stroke-width="6" fill="none"/>
-    <rect x="930" y="50" width="48" height="100"/><rect x="982" y="88" width="70" height="62"/><rect x="1060" y="35" width="42" height="115"/><rect x="1105" y="80" width="95" height="70"/>
+</head>
+<body>
+<div id="stage">
+<div class="bg" aria-hidden="true">
+  <svg viewBox="0 0 1440 300" preserveAspectRatio="xMidYMax slice">
+    <g class="sk">
+      <rect x="0" y="190" width="90" height="110"/><rect x="80" y="150" width="60" height="150"/><rect x="150" y="205" width="100" height="95"/>
+      <rect x="240" y="120" width="46" height="180"/><rect x="292" y="170" width="84" height="130"/><rect x="390" y="215" width="140" height="85"/>
+      <rect x="560" y="140" width="70" height="160"/><rect x="636" y="185" width="52" height="115"/><rect x="700" y="90" width="42" height="210"/>
+      <rect x="750" y="200" width="100" height="100"/><rect x="880" y="165" width="64" height="135"/><rect x="950" y="210" width="130" height="90"/>
+      <rect x="1100" y="130" width="54" height="170"/><rect x="1160" y="180" width="80" height="120"/><rect x="1250" y="100" width="46" height="200"/><rect x="1300" y="195" width="140" height="105"/>
+    </g>
+    <g class="palm">
+      <path d="M452 300 C456 230 448 190 440 150" stroke-width="7" fill="none"/>
+      <path d="M440 150 C420 130 395 128 370 142 M440 150 C432 122 410 104 384 100 M440 150 C452 124 476 112 504 118 M440 150 C466 142 492 152 508 172 M440 150 C418 150 396 166 388 188"/>
+      <path d="M1052 300 C1048 240 1058 200 1066 160" stroke-width="7" fill="none"/>
+      <path d="M1066 160 C1046 140 1020 138 996 152 M1066 160 C1058 132 1036 114 1010 110 M1066 160 C1078 134 1102 122 1130 128 M1066 160 C1092 152 1118 162 1134 182 M1066 160 C1044 160 1022 176 1014 198"/>
+    </g>
   </svg>
 </div>
 <main id="app" class="app"></main>
+</div>
 <script>
 /* core: helpers, router, registries, keypad, click dispatch */
 const app = document.getElementById('app');
@@ -1141,9 +1173,61 @@ function go(v){
   LEAVE.forEach(fn => fn());
   view = v; render(); window.scrollTo(0, 0);
 }
-function render(){ (VIEWS[view] || VIEWS.home)(); }
-function topbar(title, back = 'home', backText = '← В город'){
-  return `<div class="topbar"><button class="back" data-act="go" data-go="${back}">${backText}</button><span class="topbar-title">${title}</span>${fsBtn()}</div>`;
+
+/* ---------- stage: the app is one fixed screen, never a scrolling page ----------
+   The stage fills the viewport and is scaled so that a 1440x810 design box always fits (Full HD tablet: x1.33).
+   If a screen still comes out taller than the stage (a long feedback text, a big diagram), the whole stage is
+   zoomed out a little until everything fits, so nothing ever hides behind a scrollbar. */
+const STAGE = { el: document.getElementById('stage'), k: 1, f: 1, busy: false };
+function fitStage(){
+  if (STAGE.busy) return; STAGE.busy = true;
+  const vw = window.innerWidth, vh = window.innerHeight, base = Math.min(vw / 1440, vh / 810);
+  const apply = (f) => { STAGE.f = f; STAGE.k = base * f; const s = STAGE.el.style;
+    s.width = (vw / STAGE.k) + 'px'; s.height = (vh / STAGE.k) + 'px'; s.transform = `scale(${STAGE.k})`; };
+  let f = 1; apply(f);
+  while (f > .62 && (app.scrollHeight > app.clientHeight + 1 || app.scrollWidth > app.clientWidth + 1)){ f = Math.round((f - .03) * 100) / 100; apply(f); }
+  /* last resort only: if even the zoomed-out stage is too tall, let it scroll rather than cut something off */
+  app.style.overflowY = app.scrollHeight > app.clientHeight + 1 ? 'auto' : 'hidden';
+  STAGE.busy = false;
+}
+window.addEventListener('resize', fitStage);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitStage);
+if (typeof MutationObserver !== 'undefined') new MutationObserver(fitStage).observe(app, { childList: true, subtree: true, characterData: true });
+fitStage();
+function render(){ (VIEWS[view] || VIEWS.home)(); autoPage(); }
+
+/* ---------- pager: a chapter made of several cards is shown one card (page) at a time ----------
+   Tab-style screens (clock, time, units, measures) render a tab bar plus a stack of <section class="card">.
+   Each section becomes a page; a bar at the bottom flips between them. The page index survives re-renders. */
+const PG = {};
+function autoPage(){
+  const tabs = app.querySelector('.u-tabs'); if (!tabs) return;
+  const act = tabs.querySelector('.on'), key = view + ':' + (act ? act.dataset.v : '');
+  /* a single wrapper <div> that holds several cards: its cards are the pages */
+  const body = [...app.children].filter(el => el !== tabs && !el.classList.contains('topbar') && !el.classList.contains('pager'));
+  if (body.length === 1 && body[0].tagName === 'DIV' && body[0].querySelectorAll(':scope > section.card').length > 1) body[0].replaceWith(...body[0].children);
+  const pages = [];
+  [...app.children].forEach(el => {
+    if (el === tabs || el.classList.contains('topbar') || el.classList.contains('pager')) return;
+    if (el.tagName === 'SECTION' || !pages.length){ const w = document.createElement('div'); w.className = 'pg'; app.insertBefore(w, el); pages.push(w); }
+    pages[pages.length - 1].appendChild(el);
+  });
+  if (pages.length < 2) return pages.forEach(w => w.classList.add('solo'));
+  const i = Math.min(PG[key] || 0, pages.length - 1); PG[key] = i;
+  const title = (w, n) => { const h = w.querySelector('h2, h3'); const t = h ? h.textContent.trim() : ''; return t.length > 26 ? t.slice(0, 25) + '…' : (t || 'Страница ' + (n + 1)); };
+  pages.forEach((w, n) => { w.hidden = n !== i; });
+  app.insertAdjacentHTML('beforeend', `<nav class="pager" data-key="${key}" aria-label="Страницы">
+    <button class="btn ghost" data-act="pg" data-d="-1" ${i ? '' : 'disabled'}>‹ Назад</button>
+    <ol class="stepper">${pages.map((w, n) => `<li class="${n < i ? 'past' : ''} ${n === i ? 'now' : ''}"><button data-act="pg" data-to="${n}">${title(w, n)}</button></li>`).join('')}</ol>
+    <button class="btn" data-act="pg" data-d="1" ${i < pages.length - 1 ? '' : 'disabled'}>Дальше ›</button></nav>`);
+}
+ACTIONS.pg = (t) => {
+  const bar = t.closest('.pager'), key = bar.dataset.key, pages = [...app.querySelectorAll('.pg')];
+  const i = t.dataset.to != null ? +t.dataset.to : Math.max(0, Math.min(pages.length - 1, (PG[key] || 0) + +t.dataset.d));
+  PG[key] = i; render();
+};
+function topbar(title, back = 'home', backText = '← В город', mid = ''){
+  return `<div class="topbar"><button class="back" data-act="go" data-go="${back}">${backText}</button><span class="topbar-title">${title}</span>${mid}${fsBtn()}</div>`;
 }
 
 /* fullscreen: on a tablet the browser bars eat the screen. Hidden where the browser can't do it (iPhone Safari) */
@@ -1194,28 +1278,27 @@ document.addEventListener('keydown', (e) => {
 function renderHome(){
   app.innerHTML = `
   <header class="hero">
-    <div class="hero-goat" aria-hidden="true">🐐</div>
+    <div class="hero-mark" aria-hidden="true">Σ</div>
     <div class="hero-text">
-      <p class="eyebrow">Город Сан-Козлос</p>
-      <h1>Миссии Сан-Козлоса</h1>
-      <p class="lead">Козёл Гоша берётся за любую работу в городе. Разбираем его истории по шагам: сначала рисуем настоящие предметы, потом превращаем их в схему, и только потом считаем.</p>
+      <h1>Миссии <em>Лос-Сантоса</em></h1>
+      <p class="lead">Берёшь заказ в городе: сначала раскладываешь настоящие предметы, потом схему, и только потом считаешь.</p>
     </div>
+    <details class="parents">
+      <summary>Для родителей</summary>
+      <ul>
+        <li><b>Идея — от конкретного к абстрактному.</b> Сначала история рисуется монетами и машинами, потом те же предметы превращаются в полоски, потом в пример.</li>
+        <li><b>Первые разы сидите рядом.</b> Просите пересказать историю своими словами: кто что сделал и что поменялось.</li>
+        <li><b>Не называйте действие.</b> Спрашивайте: «Где вопрос? Это целое или часть?» Действие получается из схемы.</li>
+        <li><b>10–15 минут в день</b> полезнее часа в выходные. Начинайте с «Без пальцев», потом одна-две миссии.</li>
+        <li><b>Хвалите за схему и объяснение</b>, а не за скорость. Ошибка ничего не стоит, ответ проверяется «наоборот».</li>
+        <li><b>«Твоя история» — самое важное.</b> Пусть придумывает и рисует свои задачи, а вы их решайте (иногда нарочно неправильно, чтобы он поймал ошибку).</li>
+      </ul>
+    </details>
     ${fsBtn()}
   </header>
   <section class="districts">
     ${HOME_TILES.slice().sort((x, y) => x.order - y.order).map(t => t.html()).join('')}
-  </section>
-  <details class="parents">
-    <summary>Для родителей: как заниматься</summary>
-    <ul>
-      <li><b>Идея — от конкретного к абстрактному, постепенно.</b> Сначала история рисуется монетами и машинами, потом те же предметы превращаются в полоски, потом в пример. Полоски — это не новая задача, а короткая запись той же картинки.</li>
-      <li><b>Первые разы сидите рядом.</b> Просите пересказать историю своими словами: кто что сделал и что поменялось.</li>
-      <li><b>Не называйте действие.</b> Спрашивайте: «Где у нас вопрос? Это целое или часть?» Действие получается из схемы.</li>
-      <li><b>10–15 минут в день</b> полезнее часа в выходные. Начинайте с «Без пальцев», потом одна-две миссии.</li>
-      <li><b>Хвалите за схему и объяснение</b>, а не за скорость. Ошибка в приложении ничего не стоит, ответ проверяется «наоборот».</li>
-      <li><b>«Твоя история» — самое важное.</b> Пусть придумывает и рисует свои задачи, а вы их решайте (иногда нарочно неправильно, чтобы он поймал ошибку).</li>
-    </ul>
-  </details>`;
+  </section>`;
 }
 
 VIEWS.home = renderHome;
@@ -1256,7 +1339,7 @@ const PLUR = {
   листовка:['листовка','листовки','листовок'], этаж:['этаж','этажа','этажей'],
   бак:['бак','бака','баков'], наклейка:['наклейка','наклейки','наклеек'],
   бутылка:['бутылка','бутылки','бутылок'], домик:['домик','домика','домиков'],
-  кактус:['кактус','кактуса','кактусов'], миссия:['миссия','миссии','миссий'],
+  бургер:['бургер','бургера','бургеров'], миссия:['миссия','миссии','миссий'],
   коробка:['коробка','коробки','коробок'], пончик:['пончик','пончика','пончиков'],
   тарелка:['тарелка','тарелки','тарелок'], полка:['полка','полки','полок'],
   кучка:['кучка','кучки','кучек'], яблоко:['яблоко','яблока','яблок'],
@@ -1274,25 +1357,25 @@ function fmt(tpl, v){
 
 const TPLS = [
  { id:'m1', title:'Пицца и гонка', icon:'🍕', item:'🪙', schema:'join', unk:'whole',
-   text:'Гоша развёз пиццу и заработал {a:монета}. Потом выиграл гонку на мопеде и получил ещё {b:монета}. Сколько монет Гоша заработал за день?',
+   text:'Рэй развёз пиццу и заработал {a:монета}. Потом выиграл гонку на мопеде и получил ещё {b:монета}. Сколько монет Рэй заработал за день?',
    labels:{a:'за пиццу', b:'за гонку', whole:'всего за день'},
    gen(){ let a = rand(23,58), b = rand(14,39); if (b === a) b = b < 39 ? b + 1 : b - 1; return {a, b}; },
    events:[
-     { t:'Гоша развёз пиццу и заработал {a:монета}.', r:'a' },
+     { t:'Рэй развёз пиццу и заработал {a:монета}.', r:'a' },
      { t:'Потом выиграл гонку на мопеде и получил ещё {b:монета}.', r:'b',
-       lq:{ q:'После гонки монет у Гоши стало больше, меньше или столько же?',
+       lq:{ q:'После гонки монет у Рэя стало больше, меньше или столько же?',
          opts:[
-           { t:'Больше', ok:true, why:'Гоша получил ещё монеты — их стало больше. Новые кладём рядом с прежними.' },
-           { t:'Меньше', why:'Меньше бывает, когда монеты отдали или потратили. А тут Гоша получил.' },
+           { t:'Больше', ok:true, why:'Рэй получил ещё монеты — их стало больше. Новые кладём рядом с прежними.' },
+           { t:'Меньше', why:'Меньше бывает, когда монеты отдали или потратили. А тут Рэй получил.' },
            { t:'Столько же', why:'Столько же — когда ничего не поменялось. Но {b:монета} сверху — это перемена!' } ] } },
-     { t:'Сколько монет Гоша заработал за день?', r:'whole', ask:true }],
-   unit:['монету','монеты','монет'], done:'За день Гоша заработал {ans} {unit}.' },
+     { t:'Сколько монет Рэй заработал за день?', r:'whole', ask:true }],
+   unit:['монету','монеты','монет'], done:'За день Рэй заработал {ans} {unit}.' },
  { id:'j2', title:'Листовки по улицам', icon:'📄', item:'📄', schema:'join', unk:'whole',
-   text:'Гоша расклеил объявления: на первой улице {a:листовка}, на второй — ещё {b:листовка}. Сколько всего листовок он расклеил?',
+   text:'Рэй расклеил объявления: на первой улице {a:листовка}, на второй — ещё {b:листовка}. Сколько всего листовок он расклеил?',
    labels:{a:'первая улица', b:'вторая улица', whole:'все листовки'},
    gen(){ let a = rand(24,52), b = rand(15,38); if (b === a) b = b < 38 ? b + 1 : b - 1; return {a, b}; },
    events:[
-     { t:'На первой улице Гоша расклеил {a:листовка}.', r:'a',
+     { t:'На первой улице Рэй расклеил {a:листовка}.', r:'a',
        lq:{ q:'{a} — это все объявления или только первая улица?',
          opts:[
            { t:'Только первая улица', ok:true, why:'Дальше будут ещё улицы. {a} — это первая часть, кладём её слева.' },
@@ -1300,57 +1383,57 @@ const TPLS = [
            { t:'Вторая улица', why:'Вторая улица будет дальше. {a} — то, что расклеено на первой.' } ] } },
      { t:'На второй улице он расклеил ещё {b:листовка}.', r:'b' },
      { t:'Сколько всего листовок он расклеил?', r:'whole', ask:true }],
-   unit:['листовку','листовки','листовок'], done:'Гоша расклеил всего {ans} {unit}.' },
+   unit:['листовку','листовки','листовок'], done:'Рэй расклеил всего {ans} {unit}.' },
  { id:'m7', title:'Турбо-скейт', icon:'🛹', item:'🪙', schema:'join', unk:'b',
-   text:'Новый турбо-скейт стоит {whole:монета}. У Гоши уже есть {a:монета}. Сколько монет ему ещё нужно накопить?',
+   text:'Новый турбо-скейт стоит {whole:монета}. У Рэя уже есть {a:монета}. Сколько монет ему ещё нужно накопить?',
    labels:{whole:'цена скейта', a:'уже есть', b:'ещё накопить'},
    trap:'В истории есть слово «ещё», а действие — вычитание. Слова могут обманывать, схема — нет.',
    gen(){ const whole = Math.round(rand(70,95) / 5) * 5, a = rand(26, whole - 16); return {whole, a}; },
    events:[
      { t:'Новый турбо-скейт стоит {whole:монета}.', r:'whole' },
-     { t:'У Гоши уже есть {a:монета}.', r:'a',
+     { t:'У Рэя уже есть {a:монета}.', r:'a',
        lq:{ q:'{a} монет — это больше цены скейта или только часть цены?',
          opts:[
            { t:'Часть цены', ok:true, why:'{a} меньше {whole}. Это часть денег, которые уже есть. Остальное место пустое: тех монет ещё нет.' },
            { t:'Больше цены', why:'{a} меньше, чем {whole}. Больше быть никак не может.' },
            { t:'Ровно цена', why:'Ровно цена — это когда монет столько же, сколько стоит скейт. А тут меньше.' } ] } },
      { t:'Сколько монет ему ещё нужно накопить?', r:'b', ask:true }],
-   unit:['монету','монеты','монет'], done:'Гоше нужно накопить ещё {ans} {unit}.' },
+   unit:['монету','монеты','монет'], done:'Рэю нужно накопить ещё {ans} {unit}.' },
  { id:'j4', title:'Билет в аквапарк', icon:'🏄', item:'🪙', schema:'join', unk:'b',
-   text:'Билет в аквапарк стоит {whole:монета}. У Гоши есть {a:монета}. Сколько монет не хватает?',
+   text:'Билет в аквапарк стоит {whole:монета}. У Рэя есть {a:монета}. Сколько монет не хватает?',
    labels:{whole:'цена билета', a:'уже есть', b:'не хватает'},
    gen(){ const whole = Math.round(rand(65,90) / 5) * 5, a = rand(24, whole - 15); return {whole, a}; },
    events:[
      { t:'Билет в аквапарк стоит {whole:монета}.', r:'whole' },
-     { t:'У Гоши есть {a:монета}.', r:'a',
+     { t:'У Рэя есть {a:монета}.', r:'a',
        lq:{ q:'Что мы НЕ знаем: сколько уже есть, сколько стоит билет или сколько не хватает?',
          opts:[
            { t:'Сколько не хватает', ok:true, why:'Есть {a}, билет {whole}. Пустое место в полоске — то, чего не хватает.' },
            { t:'Сколько уже есть', why:'Это мы знаем: {a}. Написано в истории.' },
            { t:'Сколько стоит билет', why:'И это знаем: {whole}. Неизвестно только пустое место.' } ] } },
      { t:'Сколько монет не хватает?', r:'b', ask:true }],
-   unit:['монету','монеты','монет'], done:'Гоше не хватает {ans} {unit}.' },
+   unit:['монету','монеты','монет'], done:'Рэю не хватает {ans} {unit}.' },
  { id:'m2', title:'Неоновая подсветка', icon:'💡', item:'🪙', schema:'remove', unk:'a',
-   text:'У Гоши было {whole:монета}. В тюнинг-мастерской он купил неоновую подсветку для мопеда за {b:монета}. Сколько монет у него осталось?',
+   text:'У Рэя было {whole:монета}. В тюнинг-мастерской он купил неоновую подсветку для мопеда за {b:монета}. Сколько монет у него осталось?',
    labels:{whole:'было', b:'потратил', a:'осталось'},
    gen(){ const whole = rand(45,92), b = rand(16, Math.min(38, whole - 12)); return {whole, b}; },
    events:[
-     { t:'У Гоши было {whole:монета}.', r:'whole' },
+     { t:'У Рэя было {whole:монета}.', r:'whole' },
      { t:'В мастерской он купил неоновую подсветку за {b:монета}.', r:'b',
-       lq:{ q:'После покупки монет у Гоши стало больше, меньше или столько же?',
+       lq:{ q:'После покупки монет у Рэя стало больше, меньше или столько же?',
          opts:[
-           { t:'Меньше', ok:true, why:'Монеты ушли в мастерскую — их стало меньше. Зачёркиваем {b} монет: их у Гоши больше нет.' },
-           { t:'Больше', why:'Больше бывает, когда получили. А тут Гоша отдал монеты за подсветку.' },
+           { t:'Меньше', ok:true, why:'Монеты ушли в мастерскую — их стало меньше. Зачёркиваем {b} монет: их у Рэя больше нет.' },
+           { t:'Больше', why:'Больше бывает, когда получили. А тут Рэй отдал монеты за подсветку.' },
            { t:'Столько же', why:'Столько же — когда ничего не поменялось. Но {b:монета} ушли из кошелька.' } ] } },
      { t:'Сколько монет у него осталось?', r:'a', ask:true }],
-   unit:['монета','монеты','монет'], done:'У Гоши осталось {ans} {unit}.' },
+   unit:['монета','монеты','монет'], done:'У Рэя осталось {ans} {unit}.' },
  { id:'m5', title:'Сигнализация', icon:'🚨', item:'🚙', schema:'remove', unk:'a',
-   text:'На парковке у пляжа стояли {whole:машина}. Гоша боднул одну, сработала сигнализация, и {b:машина} в панике уехали. Сколько машин осталось?',
+   text:'На парковке у пляжа стояли {whole:машина}. Рэй задел одну, сработала сигнализация, и {b:машина} в панике уехали. Сколько машин осталось?',
    labels:{whole:'стояло', b:'уехали', a:'осталось'},
    gen(){ const whole = rand(35,80), b = rand(8, Math.min(24, whole - 15)); return {whole, b}; },
    events:[
      { t:'На парковке у пляжа стояли {whole:машина}.', r:'whole' },
-     { t:'Гоша боднул одну, сработала сигнализация, и {b:машина} уехали.', r:'b',
+     { t:'Рэй задел одну, сработала сигнализация, и {b:машина} уехали.', r:'b',
        lq:{ q:'Когда машины уехали, на парковке их стало больше, меньше или столько же?',
          opts:[
            { t:'Меньше', ok:true, why:'Машины уехали — мест осталось столько же, а машин меньше. Зачёркиваем {b} машин.' },
@@ -1359,64 +1442,64 @@ const TPLS = [
      { t:'Сколько машин осталось на парковке?', r:'a', ask:true }],
    unit:['машина','машины','машин'], done:'На парковке осталось {ans} {unit}.' },
  { id:'r3', title:'Подшипники для велосипеда', icon:'🚲', item:'🪙', schema:'remove', unk:'a',
-   text:'Гоша копил на гонку и собрал {whole:монета}. Потом купил подшипники для велосипеда за {b:монета}. Сколько монет осталось в копилке?',
+   text:'Рэй копил на гонку и собрал {whole:монета}. Потом купил подшипники для велосипеда за {b:монета}. Сколько монет осталось в копилке?',
    labels:{whole:'было в копилке', b:'потратил', a:'осталось'},
    gen(){ const whole = rand(40,88), b = rand(18, Math.min(42, whole - 12)); return {whole, b}; },
    events:[
-     { t:'Гоша собрал в копилку {whole:монета}.', r:'whole' },
+     { t:'Рэй собрал в копилку {whole:монета}.', r:'whole' },
      { t:'Потом купил подшипники за {b:монета}.', r:'b',
-       lq:{ q:'Что случилось с копилкой, когда Гоша заплатил {b} монет?',
+       lq:{ q:'Что случилось с копилкой, когда Рэй заплатил {b} монет?',
          opts:[
-           { t:'Монет стало меньше', ok:true, why:'Гоша достал {b:монета} из копилки и отдал. Зачёркиваем их.' },
-           { t:'Монет стало больше', why:'В копилку никто не клал — Гоша, наоборот, забрал.' },
+           { t:'Монет стало меньше', ok:true, why:'Рэй достал {b:монета} из копилки и отдал. Зачёркиваем их.' },
+           { t:'Монет стало больше', why:'В копилку никто не клал — Рэй, наоборот, забрал.' },
            { t:'Ничего не изменилось', why:'Подшипники не бесплатные: {b:монета} ушли из копилки.' } ] } },
      { t:'Сколько монет осталось в копилке?', r:'a', ask:true }],
    unit:['монета','монеты','монет'], done:'В копилке осталось {ans} {unit}.' },
  { id:'m10', title:'Розовый фургон', icon:'🎨', item:'🪙', schema:'remove', unk:'whole',
-   text:'Гоша перекрасил фургон в розовый цвет и заплатил за краску {b:монета}. После этого у него осталось {a:монета}. Сколько монет было у Гоши до покраски?',
+   text:'Рэй перекрасил фургон в розовый цвет и заплатил за краску {b:монета}. После этого у него осталось {a:монета}. Сколько монет было у Рэя до покраски?',
    labels:{whole:'было сначала', b:'потратил', a:'осталось'},
    trap:'В истории сказано «заплатил», а действие — сложение. Мы ищем, сколько было ДО: всю полоску целиком.',
    gen(){ let b = rand(24,48), a = rand(18,40); if (a === b) a = a < 40 ? a + 1 : a - 1; return {b, a}; },
    events:[
-     { t:'Гоша перекрасил фургон и заплатил за краску {b:монета}.', r:'b',
-       lq:{ q:'Когда Гоша заплатил за краску, монет у него стало больше или меньше?',
+     { t:'Рэй перекрасил фургон и заплатил за краску {b:монета}.', r:'b',
+       lq:{ q:'Когда Рэй заплатил за краску, монет у него стало больше или меньше?',
          opts:[
            { t:'Меньше', ok:true, why:'Монеты ушли за краску — их стало меньше. Эти {b} монет рисуем зачёркнутыми.' },
            { t:'Больше', why:'Платёж не приносит денег, а забирает: стало меньше.' },
            { t:'Столько же', why:'Краска стоила {b:монета}, и они ушли из кошелька.' } ] } },
      { t:'После этого у него осталось {a:монета}.', r:'a',
-       lq:{ q:'Эти {a} монеты Гоша потратил или они у него остались?',
+       lq:{ q:'Эти {a} монеты Рэй потратил или они у него остались?',
          opts:[
-           { t:'Остались', ok:true, why:'{a} монеты остались у Гоши. Рисуем их рядом с зачёркнутыми: это то, что не ушло.' },
-           { t:'Потратил', why:'«Осталось» значит: они лежат у Гоши. Потратил он другие — {b}.' },
+           { t:'Остались', ok:true, why:'{a} монеты остались у Рэя. Рисуем их рядом с зачёркнутыми: это то, что не ушло.' },
+           { t:'Потратил', why:'«Осталось» значит: они лежат у Рэя. Потратил он другие — {b}.' },
            { t:'Их не было', why:'Были: история говорит, что {a} монеты остались после покупки.' } ] } },
-     { t:'Сколько монет было у Гоши до покраски?', r:'whole', ask:true }],
-   unit:['монета','монеты','монет'], done:'До покраски у Гоши было {ans} {unit}.' },
+     { t:'Сколько монет было у Рэя до покраски?', r:'whole', ask:true }],
+   unit:['монета','монеты','монет'], done:'До покраски у Рэя было {ans} {unit}.' },
  { id:'r5', title:'Открытие кафе', icon:'☕', item:'🪙', schema:'remove', unk:'whole',
-   text:'На праздник открытия кафе Гоша потратил {b:монета} на шарики и тортик. После праздника у него осталось {a:монета}. Сколько монет было до праздника?',
+   text:'На праздник открытия кафе Рэй потратил {b:монета} на шарики и тортик. После праздника у него осталось {a:монета}. Сколько монет было до праздника?',
    labels:{whole:'было до праздника', b:'потратил', a:'осталось'},
    gen(){ let b = rand(22,46), a = rand(16,38); if (a === b) a = a < 38 ? a + 1 : a - 1; return {b, a}; },
    events:[
-     { t:'На праздник Гоша потратил {b:монета}.', r:'b' },
+     { t:'На праздник Рэй потратил {b:монета}.', r:'b' },
      { t:'После праздника у него осталось {a:монета}.', r:'a',
        lq:{ q:'Какую полоску мы ищем: то, что ушло, то, что осталось, или всё, что было?',
          opts:[
            { t:'Всё, что было', ok:true, why:'Было = ушло + осталось. Спрашивают про всю полоску целиком.' },
            { t:'То, что ушло', why:'Ушло мы знаем: {b}. Это уже нарисовано зачёркнутым.' },
            { t:'То, что осталось', why:'Осталось тоже знаем: {a}. Неизвестна вся полоска.' } ] } },
-     { t:'Сколько монет было у Гоши до праздника?', r:'whole', ask:true }],
-   unit:['монета','монеты','монет'], done:'До праздника у Гоши было {ans} {unit}.' },
+     { t:'Сколько монет было у Рэя до праздника?', r:'whole', ask:true }],
+   unit:['монета','монеты','монет'], done:'До праздника у Рэя было {ans} {unit}.' },
  { id:'m4', title:'Мотоцикл против фургона', icon:'🏍️', item:'', schema:'compare', unk:'diff',
-   text:'Мотоцикл Гоши разгоняется до {big:км/ч}, а фургон с мороженым — только до {small:км/ч}. На сколько мотоцикл быстрее?',
+   text:'Мотоцикл Рэя разгоняется до {big:км/ч}, а фургон с мороженым — только до {small:км/ч}. На сколько мотоцикл быстрее?',
    labels:{big:'мотоцикл', small:'фургон', diff:'на сколько быстрее'},
    gen(){ const big = rand(62,95), small = rand(Math.max(38, big - 40), big - 14); return {big, small}; },
    events:[
-     { t:'Мотоцикл Гоши разгоняется до {big:км/ч}.', r:'big' },
+     { t:'Мотоцикл Рэя разгоняется до {big:км/ч}.', r:'big' },
      { t:'А фургон с мороженым — только до {small:км/ч}.', r:'small',
        lq:{ q:'Фургон — это тот же мотоцикл или другая машина?',
          opts:[
            { t:'Другая машина', ok:true, why:'Фургон — другая машина, у мотоцикла ничего не убавилось. Рисуем скорость фургона отдельной полоской, под мотоциклом.' },
-           { t:'Тот же мотоцикл', why:'Нет, их два: мотоцикл Гоши и фургон. Скорости сравниваем, а не складываем в одну.' },
+           { t:'Тот же мотоцикл', why:'Нет, их два: мотоцикл Рэя и фургон. Скорости сравниваем, а не складываем в одну.' },
            { t:'Прицеп мотоцикла', why:'Фургон ездит сам по себе. Это второй герой истории.' } ] } },
      { t:'На сколько мотоцикл быстрее?', r:'diff', ask:true }],
    unit:['км/ч','км/ч','км/ч'], done:'Мотоцикл быстрее на {ans} {unit}.' },
@@ -1435,45 +1518,45 @@ const TPLS = [
      { t:'На сколько этажей небоскрёб выше?', r:'diff', ask:true }],
    unit:['этаж','этажа','этажей'], done:'Небоскрёб выше на {ans} {unit}.' },
  { id:'m9', title:'Мусорные баки', icon:'🗑️', item:'🗑️', schema:'compare', unk:'big',
-   text:'Пёс Бакс опрокинул {small:бак}. Гоша опрокинул на {diff:бак} больше. Сколько баков опрокинул Гоша?',
-   labels:{big:'Гоша', small:'Бакс', diff:'на сколько больше'},
+   text:'Пёс Бакс опрокинул {small:бак}. Рэй опрокинул на {diff:бак} больше. Сколько баков опрокинул Рэй?',
+   labels:{big:'Рэй', small:'Бакс', diff:'на сколько больше'},
    gen(){ let small = rand(14,42), diff = rand(6,18); if (diff === small) diff = diff < 18 ? diff + 1 : diff - 1; return {small, diff}; },
    events:[
      { t:'Пёс Бакс опрокинул {small:бак}.', r:'small' },
-     { t:'Гоша опрокинул на {diff:бак} больше.', r:'diff',
-       lq:{ q:'Гоша опрокинул ровно {diff} баков или на {diff} больше, чем Бакс?',
+     { t:'Рэй опрокинул на {diff:бак} больше.', r:'diff',
+       lq:{ q:'Рэй опрокинул ровно {diff} баков или на {diff} больше, чем Бакс?',
          opts:[
-           { t:'На {diff} больше, чем Бакс', ok:true, why:'У Гоши столько же, сколько у Бакса, и ещё {diff} сверху. Лишние рисуем пунктиром.' },
-           { t:'Ровно {diff}', why:'Тогда у Гоши было бы всего {diff}. Но он «аутсайдер» только по разнице, а баков у него больше.' },
-           { t:'На {diff} меньше', why:'«Больше» — значит, у Гоши баков больше, а не меньше.' } ] } },
-     { t:'Сколько баков опрокинул Гоша?', r:'big', ask:true }],
-   unit:['бак','бака','баков'], done:'Гоша опрокинул {ans} {unit}.' },
+           { t:'На {diff} больше, чем Бакс', ok:true, why:'У Рэя столько же, сколько у Бакса, и ещё {diff} сверху. Лишние рисуем пунктиром.' },
+           { t:'Ровно {diff}', why:'Тогда у Рэя было бы всего {diff}. Но он «аутсайдер» только по разнице, а баков у него больше.' },
+           { t:'На {diff} меньше', why:'«Больше» — значит, у Рэя баков больше, а не меньше.' } ] } },
+     { t:'Сколько баков опрокинул Рэй?', r:'big', ask:true }],
+   unit:['бак','бака','баков'], done:'Рэй опрокинул {ans} {unit}.' },
  { id:'c4', title:'Домики из картона', icon:'📦', item:'📦', schema:'compare', unk:'big',
-   text:'Бакс построил {small:домик} из картона. Гоша построил на {diff:домик} больше. Сколько домиков у Гоши?',
-   labels:{big:'у Гоши', small:'у Бакса', diff:'на сколько больше'},
+   text:'Бакс построил {small:домик} из картона. Рэй построил на {diff:домик} больше. Сколько домиков у Рэя?',
+   labels:{big:'у Рэя', small:'у Бакса', diff:'на сколько больше'},
    gen(){ let small = rand(12,38), diff = rand(5,19); if (diff === small) diff = diff < 19 ? diff + 1 : diff - 1; return {small, diff}; },
    events:[
      { t:'Бакс построил {small:домик}.', r:'small' },
-     { t:'Гоша построил на {diff:домик} больше.', r:'diff',
-       lq:{ q:'Полоска Гоши на схеме — длиннее полоски Бакса, короче или такая же?',
+     { t:'Рэй построил на {diff:домик} больше.', r:'diff',
+       lq:{ q:'Полоска Рэя на схеме — длиннее полоски Бакса, короче или такая же?',
          opts:[
-           { t:'Длиннее', ok:true, why:'«На больше» — полоска Гоши такая же, как у Бакса, плюс ещё кусочек {diff}.' },
-           { t:'Короче', why:'Короче было бы, если Гоша построил меньше. А он построил больше.' },
+           { t:'Длиннее', ok:true, why:'«На больше» — полоска Рэя такая же, как у Бакса, плюс ещё кусочек {diff}.' },
+           { t:'Короче', why:'Короче было бы, если Рэй построил меньше. А он построил больше.' },
            { t:'Такая же', why:'Такая же была бы при слове «поровну». А тут «на больше».' } ] } },
-     { t:'Сколько домиков у Гоши?', r:'big', ask:true }],
-   unit:['домик','домика','домиков'], done:'У Гоши {ans} {unit}.' },
+     { t:'Сколько домиков у Рэя?', r:'big', ask:true }],
+   unit:['домик','домика','домиков'], done:'У Рэя {ans} {unit}.' },
  { id:'m12', title:'Наклейки', icon:'⭐', item:'⭐', schema:'compare', unk:'small',
-   text:'У Гоши {big:наклейка}. Это на {diff:наклейка} больше, чем у Бакса. Сколько наклеек у Бакса?',
-   labels:{big:'у Гоши', small:'у Бакса', diff:'разница'},
+   text:'У Рэя {big:наклейка}. Это на {diff:наклейка} больше, чем у Бакса. Сколько наклеек у Бакса?',
+   labels:{big:'у Рэя', small:'у Бакса', diff:'разница'},
    trap:'В задаче слово «больше», а мы вычитаем. Потому что «?» стоит на короткой полоске.',
    gen(){ const big = rand(42,78), diff = rand(13,28); return {big, diff}; },
    events:[
-     { t:'У Гоши {big:наклейка}.', r:'big' },
+     { t:'У Рэя {big:наклейка}.', r:'big' },
      { t:'Это на {diff:наклейка} больше, чем у Бакса.', r:'diff',
-       lq:{ q:'У кого наклеек больше: у Гоши или у Бакса?',
+       lq:{ q:'У кого наклеек больше: у Рэя или у Бакса?',
          opts:[
-           { t:'У Гоши', ok:true, why:'У Гоши больше. Значит, у Бакса — столько же, только без {diff}. Их рисуем пунктиром: у Бакса их нет.' },
-           { t:'У Бакса', why:'«Это на больше, чем у Бакса» — больше именно у Гоши.' },
+           { t:'У Рэя', ok:true, why:'У Рэя больше. Значит, у Бакса — столько же, только без {diff}. Их рисуем пунктиром: у Бакса их нет.' },
+           { t:'У Бакса', why:'«Это на больше, чем у Бакса» — больше именно у Рэя.' },
            { t:'Поровну', why:'Поровну было бы без слов «на больше». А разница есть: {diff}.' } ] } },
      { t:'Сколько наклеек у Бакса?', r:'small', ask:true }],
    unit:['наклейка','наклейки','наклеек'], done:'У Бакса {ans} {unit}.' },
@@ -1519,27 +1602,27 @@ const TPLS = [
            { t:'В первой коробке', why:'Не только в первой: «по {size}» — в каждой из {count} коробок.' } ] } },
      { t:'Сколько всего пончиков привезли?', r:'total', ask:true }],
    unit:['пончик','пончика','пончиков'], done:'Привезли {ans} {unit}.' },
- { id:'m8', title:'Кактусовый обед', icon:'🌵', item:'🌵', schema:'groups', unk:'total',
-   text:'Обычный козёл съедает {size:кактус} в день. Гоша съедает в {count:раз} больше. Сколько кактусов в день съедает Гоша?',
-   labels:{size:'у обычного козла', count:'раз больше', total:'у Гоши'},
+ { id:'m8', title:'Бургеры на обед', icon:'🍔', item:'🍔', schema:'groups', unk:'total',
+   text:'Обычный посетитель съедает {size:бургер} за обед. Рэй съедает в {count:раз} больше. Сколько бургеров за обед съедает Рэй?',
+   labels:{size:'у обычного посетителя', count:'раз больше', total:'у Рэя'},
    trap:'«В {count} раз больше» — это {count} одинаковых порций, а не «плюс {count}». На схеме порция повторяется {count} раз.',
    gen(){ const size = rand(3,5), count = rand(4,6); return {size, count}; },
    events:[
-     { t:'Обычный козёл съедает {size:кактус} в день.', r:'size' },
-     { t:'Гоша съедает в {count:раз} больше.', r:'count',
+     { t:'Обычный посетитель съедает {size:бургер} за обед.', r:'size' },
+     { t:'Рэй съедает в {count:раз} больше.', r:'count',
        lq:{ q:'«В {count} раз больше» — это прибавить {count} или взять по {size} целых {count} раз?',
          opts:[
            { t:'Взять по {size} целых {count} раз', ok:true, why:'«В {count} раз больше» — {count} одинаковых порций по {size}. Рисуем {count} порций.' },
            { t:'Прибавить {count}', why:'«На {count} больше» — это плюс {count}. А «В {count} РАЗ больше» — умножить: {count} порций.' },
-           { t:'Съесть {count} кактусов', ok:false, why:'Гоша съедает не {count}, а гораздо больше: {count} порций по {size}.' } ] } },
-     { t:'Сколько кактусов в день съедает Гоша?', r:'total', ask:true }],
-   unit:['кактус','кактуса','кактусов'], done:'Гоша съедает {ans} {unit} в день.' },
+           { t:'Съесть всего {count}', ok:false, why:'Рэй съедает не {count}, а гораздо больше: {count} порций по {size}.' } ] } },
+     { t:'Сколько бургеров за обед съедает Рэй?', r:'total', ask:true }],
+   unit:['бургер','бургера','бургеров'], done:'Рэй съедает {ans} {unit} за обед.' },
  { id:'m13', title:'Неделя миссий', icon:'📅', item:'✅', schema:'groups', unk:'total',
-   text:'Гоша каждый день выполняет {size:миссия}. Сколько миссий он выполнит за {count:день}?',
+   text:'Рэй каждый день выполняет {size:миссия}. Сколько миссий он выполнит за {count:день}?',
    labels:{size:'миссий в день', count:'дней', total:'всего миссий'},
    gen(){ const size = rand(4,8), count = rand(3,7); return {size, count}; },
    events:[
-     { t:'Гоша каждый день выполняет {size:миссия}.', r:'size' },
+     { t:'Рэй каждый день выполняет {size:миссия}.', r:'size' },
      { t:'Он работает {count:день}.', r:'count',
        lq:{ q:'{count} дней — это {count} раз по {size} миссий или {size} миссий сверху?',
          opts:[
@@ -1547,13 +1630,13 @@ const TPLS = [
            { t:'{size} миссий сверху', why:'Сверху было бы, если сказали «на больше». А тут каждый день заново.' },
            { t:'Всего {size} миссий', why:'{size} — это только за один день. Дней {count}.' } ] } },
      { t:'Сколько миссий он выполнит за эти дни?', r:'total', ask:true }],
-   unit:['миссию','миссии','миссий'], done:'За эти дни Гоша выполнит {ans} {unit}.' },
+   unit:['миссию','миссии','миссий'], done:'За эти дни Рэй выполнит {ans} {unit}.' },
  { id:'m6', title:'Клад на стройке', icon:'💰', item:'🪙', schema:'groups', unk:'size',
-   text:'Гоша нашёл на стройке {total:монета} и разложил их поровну на {count:кучка}. Сколько монет в каждой кучке?',
+   text:'Рэй нашёл на стройке {total:монета} и разложил их поровну на {count:кучка}. Сколько монет в каждой кучке?',
    labels:{size:'монет в кучке', count:'кучек', total:'всего монет'},
    gen(){ const count = rand(3,5), size = rand(4,9); return {count, size, total:count * size}; },
    events:[
-     { t:'Гоша нашёл на стройке {total:монета}.', r:'total' },
+     { t:'Рэй нашёл на стройке {total:монета}.', r:'total' },
      { t:'Он разложил их поровну на {count:кучка}.', r:'count',
        lq:{ q:'«Поровну на {count} кучки» — это как?',
          opts:[
@@ -1563,11 +1646,11 @@ const TPLS = [
      { t:'Сколько монет в каждой кучке?', r:'size', ask:true }],
    unit:['монету','монеты','монет'], done:'В каждой кучке {ans} {unit}.' },
  { id:'g6', title:'Тарелки на полках', icon:'🍽️', item:'🍽️', schema:'groups', unk:'size',
-   text:'У Гоши {total:тарелка}. Он расставил их поровну на {count:полка}. Сколько тарелок на каждой полке?',
+   text:'У Рэя {total:тарелка}. Он расставил их поровну на {count:полка}. Сколько тарелок на каждой полке?',
    labels:{size:'тарелок на полке', count:'полок', total:'всего тарелок'},
    gen(){ const count = rand(3,6), size = rand(3,8); return {count, size, total:count * size}; },
    events:[
-     { t:'У Гоши {total:тарелка}.', r:'total' },
+     { t:'У Рэя {total:тарелка}.', r:'total' },
      { t:'Он расставил их поровну на {count:полка}.', r:'count',
        lq:{ q:'Что мы знаем про полки: сколько их или сколько тарелок на каждой?',
          opts:[
@@ -1576,26 +1659,26 @@ const TPLS = [
            { t:'И то и другое', why:'Про тарелки на полке мы пока ничего не знаем — это «?».' } ] } },
      { t:'Сколько тарелок на каждой полке?', r:'size', ask:true }],
    unit:['тарелка','тарелки','тарелок'], done:'На каждой полке {ans} {unit}.' },
- { id:'m11', title:'Козлиное такси', icon:'🚕', item:'🧍', schema:'groups', unk:'count',
-   text:'В такси Гоши помещаются {size:пассажир}. На вокзале ждут {total:турист}. Сколько поездок нужно сделать Гоше?',
+ { id:'m11', title:'Такси', icon:'🚕', item:'🧍', schema:'groups', unk:'count',
+   text:'В такси Рэя помещаются {size:пассажир}. На вокзале ждут {total:турист}. Сколько поездок нужно сделать Рэю?',
    labels:{size:'мест в такси', count:'поездок', total:'всего туристов'},
    gen(){ const count = rand(4,9), size = rand(3,6); return {count, size, total:count * size}; },
    events:[
-     { t:'В такси Гоши помещаются {size:пассажир}.', r:'size' },
+     { t:'В такси Рэя помещаются {size:пассажир}.', r:'size' },
      { t:'На вокзале ждут {total:турист}.', r:'total',
        lq:{ q:'{total} туристов — это все, кого надо развезти, или те, кто сядет в одно такси?',
          opts:[
            { t:'Все туристы', ok:true, why:'В одно такси садятся только {size}. А {total} — все вместе, их развозим по {size}.' },
            { t:'Одно такси', why:'В одно такси помещаются {size}, не {total}.' },
            { t:'Последняя поездка', why:'Про последние поездки ничего не сказано. {total} — все туристы на вокзале.' } ] } },
-     { t:'Сколько поездок нужно сделать Гоше?', r:'count', ask:true }],
-   unit:['поездку','поездки','поездок'], done:'Гоше нужно сделать {ans} {unit}.' },
+     { t:'Сколько поездок нужно сделать Рэю?', r:'count', ask:true }],
+   unit:['поездку','поездки','поездок'], done:'Рэю нужно сделать {ans} {unit}.' },
  { id:'g8', title:'Корзинки для яблок', icon:'🧺', item:'🍎', schema:'groups', unk:'count',
-   text:'Гоша собрал {total:яблоко}. В каждую корзинку он кладёт по {size:яблоко}. Сколько корзинок ему понадобится?',
+   text:'Рэй собрал {total:яблоко}. В каждую корзинку он кладёт по {size:яблоко}. Сколько корзинок ему понадобится?',
    labels:{size:'яблок в корзинке', count:'корзинок', total:'всего яблок'},
    gen(){ const count = rand(4,9), size = rand(2,6); return {count, size, total:count * size}; },
    events:[
-     { t:'Гоша собрал {total:яблоко}.', r:'total' },
+     { t:'Рэй собрал {total:яблоко}.', r:'total' },
      { t:'В каждую корзинку он кладёт по {size:яблоко}.', r:'size',
        lq:{ q:'Корзинки выходят одинаковые или разные?',
          opts:[
@@ -1603,7 +1686,7 @@ const TPLS = [
            { t:'Разные', why:'«По {size}» значит одинаковые: в каждой ровно {size}.' },
            { t:'Одна большая корзинка', why:'Корзинок несколько — их количество и есть вопрос.' } ] } },
      { t:'Сколько корзинок ему понадобится?', r:'count', ask:true }],
-   unit:['корзинку','корзинки','корзинок'], done:'Гоше понадобится {ans} {unit}.' }
+   unit:['корзинку','корзинки','корзинок'], done:'Рэю понадобится {ans} {unit}.' }
 ];
 
 /* the name of the picture is given only after the kid has built it from objects */
@@ -1635,11 +1718,11 @@ function buildMission(tpl){
 function renderMissions(){
   const done = store.get('done', []);
   app.innerHTML = topbar('Миссии') + `
-  <p class="tip">Прочитай историю, разбери её по предложениям на картинке, преврати в схему, выбери действие и посчитай. Числа каждый раз новые: прошёл миссию — пройди ещё раз, будет другой пример.</p>
+  <p class="tip">Прочитай, разбери на картинке, нарисуй схему, выбери действие, посчитай. Числа каждый раз новые.</p>
   <section class="mgrid">${TPLS.map((t, i) => `
     <button class="mtile ${done.includes(t.id) ? 'done' : ''}" data-act="open" data-id="${t.id}">
       <span class="ico" aria-hidden="true">${t.icon}</span>
-      <span class="num">Миссия ${i + 1}</span>
+      <span class="num">№ ${i + 1}</span>
       <h3>${t.title}</h3>
       ${done.includes(t.id) ? '<span class="ok">✓ Пройдена — можно заново</span>' : ''}
     </button>`).join('')}
@@ -1892,7 +1975,7 @@ function renderMission(){
 
   if (M.step === 2){
     const sc = SCHEMAS[M.cfg.schema];
-    body = storyMini(m) + `<section class="card">
+    body = storyMini(m) + `<div class="cols${M.barSeen ? '' : ' one'}"><section class="card">
       <div class="beat-head"><h2>Из картинки в схему</h2>${M.barSeen ? modeSwitch() : ''}</div>
       <p class="rule">Рисовать каждый предмет долго, а если их тысяча? Поэтому предметы заменяют <b>полоской</b>: чем больше предметов, тем длиннее полоска. Число пишут прямо на ней.</p>
       ${sceneDia(allRev(), { mode:M.mode, morph:M.morph })}
@@ -1900,36 +1983,38 @@ function renderMission(){
         <div class="row"><button class="btn" data-act="step" data-to="3">Дальше: выбираем действие →</button></div>`
       : `<div class="row"><button class="btn" data-act="tobar">Превратить предметы в полоски</button></div>`}
       </section>
-      ${M.barSeen ? `<section class="card">
+      ${M.barSeen ? `<section class="card side-note">
         <div class="schema-name"><span class="eyebrow">Такая схема называется</span><b>${sc.name}</b><p>${sc.what}</p></div>
-        <p class="dia-cap">Переключай «Предметы» и «Полоски» на верхней картинке: это одна и та же история, просто нарисована короче.</p>
-      </section>` : ''}`;
+        <p class="dia-cap">Переключай «Предметы» и «Полоски»: это одна и та же история, просто нарисована короче.</p>
+      </section>` : ''}</div>`;
   }
 
   if (M.step === 3){
     const d = derive(M.cfg), sc = SCHEMAS[M.cfg.schema], L = M.cfg.labels, unk = unkOf(M.cfg);
     const ops = [['+','Сложить'],['−','Вычесть'],['×','Умножить'],[':','Разделить']];
-    body = storyMini(m) + `<section class="card">
+    body = storyMini(m) + `<div class="cols"><section class="card">
       ${sceneDia(allRev(), { mode:M.mode })}
-      <div class="schema-name"><span class="eyebrow">Схема</span><b>${sc.name}</b><p>${sc.what}</p></div>
       ${M.opOk ? `
         <p class="rule">${d.rule}</p>
         <p class="expr">${exprText(d)}</p>
         ${m.trap ? `<p class="trap">${m.trap}</p>` : ''}
         <div class="row"><button class="btn" data-act="step" data-to="4">Считаем →</button></div>`
       : `<p class="prompt">Каким действием найдём «${L[unk]}»? Сначала подумай, потом нажми.</p>
-        <div class="ops" style="margin-top:12px">${ops.map(([o, n]) => `<button data-act="mop" data-op="${o}" aria-label="${n}">${o}</button>`).join('')}</div>
+        <div class="ops">${ops.map(([o, n]) => `<button data-act="mop" data-op="${o}" aria-label="${n}">${o}</button>`).join('')}</div>
         ${M.opMsg ? `<div class="feedback soft" aria-live="polite"><p>${M.opMsg}</p></div>` : ''}`}
-      </section>`;
+      </section>
+      <section class="card side-note"><div class="schema-name"><span class="eyebrow">Схема</span><b>${sc.name}</b><p>${sc.what}</p></div></section></div>`;
   }
 
   if (M.step === 4){
     const d = derive(M.cfg);
     if (!M.solved3){
       const st = calcSteps(d).slice(0, M.hintN);
-      body = storyMini(m) + `<section class="card">${sceneDia(allRev(), { mode:'bar' })}<p class="expr">${exprText(d)}</p>
+      body = storyMini(m) + `<section class="card calc-card">
         <div class="calc-grid">
-          <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="calc-left">
+            ${sceneDia(allRev(), { mode:'bar' })}
+            <p class="expr">${exprText(d)}</p>
             <p class="rule">Посчитай в уме. Трудно — открой подсказку: она покажет шаги.</p>
             ${st.length ? `<ol class="steps">${st.map(s => `<li>${s}</li>`).join('')}</ol>` : ''}
             ${M.hintN < calcSteps(d).length ? `<div class="row"><button class="btn ghost" data-act="hint">${M.hintN ? 'Следующий шаг' : 'Как посчитать без пальцев?'}</button></div>` : ''}
@@ -1938,8 +2023,8 @@ function renderMission(){
           ${padHTML('Твой ответ')}
         </div></section>`;
     } else {
-      body = `<section class="card">
-        <div class="win"><span class="win-goat" aria-hidden="true">🐐</span><div style="flex:1 1 260px;min-width:0"><h2>Миссия выполнена</h2>
+      body = `<section class="card win-card">
+        <div class="win"><span class="win-goat" aria-hidden="true">★</span><div style="flex:1 1 260px;min-width:0"><h2>Миссия выполнена</h2>
         <p class="rule">${m.done.replace('{ans}', m.answer).replace('{unit}', plural(m.answer, m.unit))}</p></div></div>
         <p class="expr">${exprText(d, m.answer)}</p>
         <p class="check-line">Проверка наоборот: ${verifyOk(d, m.answer)}</p>
@@ -1954,7 +2039,7 @@ function renderMission(){
     const colors = ['#1b2230','#e0782f','#d94f73','#1f7f6b','#2b4acb','#e5b53a','#7a4a24'];
     body = `<section class="card">
       <h2>Теперь ты автор</h2>
-      <p class="rule">Придумай свою историю, где тоже получается <b>${d.x} ${d.op} ${d.y}</b>. Про что угодно: машины, гонки, Гошу, своих героев. Напиши и нарисуй.</p>
+      <p class="rule">Придумай свою историю, где тоже получается <b>${d.x} ${d.op} ${d.y}</b>. Про что угодно: машины, гонки, Рэя, своих героев. Напиши и нарисуй.</p>
       <div class="own-grid">
         <div style="display:flex;flex-direction:column;gap:10px"><label for="own-text"><b>Моя история</b></label>
           <textarea id="own-text" placeholder="Например: у Бакса было…"></textarea></div>
@@ -1968,7 +2053,7 @@ function renderMission(){
       <div class="row"><button class="btn mint" data-act="save-own">Сохранить в альбом</button><button class="btn ghost" data-act="go" data-go="missions">Пропустить</button></div></section>`;
   }
 
-  app.innerHTML = topbar(`Миссия ${idx + 1} · ${m.title}`, 'missions', '← Все миссии') + stepper + body;
+  app.innerHTML = topbar(`Миссия ${idx + 1} · ${m.title}`, 'missions', '← Все миссии', stepper) + body;
   if (M.step === 4 && !M.solved3) PAD.submit = submitMission;
   if (M.step === 5) initCanvas();
   M.rp.fresh = null; M.morph = false;   // a new piece animates once
@@ -2103,7 +2188,7 @@ function taskHTML(){
   const d = m.d, ops = [['+','Сложить'],['−','Вычесть'],['×','Умножить'],[':','Разделить']];
   if (SH.phase === 'done'){
     return story + `<section class="card">
-      <div class="win"><span class="win-goat" aria-hidden="true">🐐</span><div><h2>Верно!</h2>
+      <div class="win"><span class="win-goat" aria-hidden="true">★</span><div><h2>Верно!</h2>
         <p class="check-line">${SCHEMAS[sc].name} · ${d.x} ${d.op} ${d.y} = ${m.answer}</p>
         <p class="rule">${d.rule}</p></div></div>
       <div class="row"><button class="btn mint" data-act="snext">${SH.i + 1 < SH.tasks.length ? 'Следующая задача →' : 'Итог →'}</button></div>
@@ -2123,7 +2208,7 @@ function finishHTML(){
   if (s > (bs || 0)) store.set('schBest', s + ':' + o);
   const best = store.get('schBest', '0:0');
   return `<section class="card sh-finish">
-    <span class="win-goat" aria-hidden="true">🐐</span>
+    <span class="win-goat" aria-hidden="true">★</span>
     <h2>Раунд пройден!</h2>
     <p class="rule">Схемы угаданы с первого раза: <b>${s} из 10</b>. Действия выбраны с первого раза: <b>${o} из 10</b>.</p>
     <p class="rule">${s >= 9 ? 'Мастер схем! Попробуй раунд посложнее — миссии.' : s >= 6 ? 'Хорошо! Ещё раунд — и будет без ошибок.' : 'Смотри подсказки под схемами: они объясняют разницу. И попробуй ещё раз!'}</p>
@@ -2191,12 +2276,12 @@ const TYPES = [
       const A = rand(20, 60), B = rand(15, 45), C = rand(12, A + B - 12);
       const mid = A + B, ans = mid - C;
       return {
-        text:`У Гоши было ${f(A,'монета')}. За день он заработал ещё ${f(B,'монета')}, а вечером потратил ${f(C,'монета')} на корм для Бакса. Сколько монет у него осталось?`,
+        text:`У Рэя было ${f(A,'монета')}. За день он заработал ещё ${f(B,'монета')}, а вечером потратил ${f(C,'монета')} на корм для Бакса. Сколько монет у него осталось?`,
         plans:[
-          { t:`Сколько монет стало, когда Гоша заработал ещё ${f(B,'монета')}?`, ok:true,
+          { t:`Сколько монет стало, когда Рэй заработал ещё ${f(B,'монета')}?`, ok:true,
             why:'Верно. Сначала узнаем, сколько стало, и только потом вычтем корм.' },
-          { t:'Сколько монет осталось у Гоши?', why:'Это ГЛАВНЫЙ вопрос задачи, он самый последний. Пока мы не знаем, сколько стало, на него не ответить.' },
-          { t:'Сколько монет Гоша потратил на корм?', why:`Это уже написано в истории: ${f(C,'монета')}. Считать не нужно.` } ],
+          { t:'Сколько монет осталось у Рэя?', why:'Это ГЛАВНЫЙ вопрос задачи, он самый последний. Пока мы не знаем, сколько стало, на него не ответить.' },
+          { t:'Сколько монет Рэй потратил на корм?', why:`Это уже написано в истории: ${f(C,'монета')}. Считать не нужно.` } ],
         steps:[{ q:'Шаг 1: сколько монет стало после заработка?', x:A, op:'+', y:B, ans:mid, label:'стало после заработка' }],
         fin:{ op:'−', x:mid, y:C, ans, q:'Последний шаг: сколько осталось после корма?', label:'осталось' },
         check:`${ans} + ${C} = ${mid}`
@@ -2207,11 +2292,11 @@ const TYPES = [
       const n = rand(3, 6), p = rand(8, 25), k = rand(30, 70);
       const mid = n * p, ans = mid + k;
       return {
-        text:`Гоша купил ${f(n,'порция')} мороженого по ${f(p,'монета')} и бутылку лимонада за ${f(k,'монета')}. Сколько всего монет он заплатил?`,
+        text:`Рэй купил ${f(n,'порция')} мороженого по ${f(p,'монета')} и бутылку лимонада за ${f(k,'монета')}. Сколько всего монет он заплатил?`,
         plans:[
           { t:`Сколько стоят все ${plural(n, ['порция','порции','порций'])} мороженого?`, ok:true,
             why:'Верно. Сначала посчитаем мороженое, потом добавим лимонад.' },
-          { t:'Сколько всего монет Гоша заплатил?', why:'Это ГЛАВНЫЙ вопрос задачи. Чтобы на него ответить, сначала посчитаем мороженое.' },
+          { t:'Сколько всего монет Рэй заплатил?', why:'Это ГЛАВНЫЙ вопрос задачи. Чтобы на него ответить, сначала посчитаем мороженое.' },
           { t:'Сколько стоит одна порция мороженого?', why:`Это уже написано в истории: ${f(p,'монета')}. Считать не нужно.` } ],
         steps:[{ q:'Шаг 1: сколько стоят все порции мороженого?', x:p, op:'×', y:n, ans:mid, label:'мороженое' }],
         fin:{ op:'+', x:mid, y:k, ans, q:'Последний шаг: сколько заплатил всего?', label:'всего заплатил' },
@@ -2223,28 +2308,28 @@ const TYPES = [
       const n = rand(3, 5), p = rand(9, 20), A = n * p + rand(15, 60);
       const mid = n * p, ans = A - mid;
       return {
-        text:`В копилке у Гоши лежало ${f(A,'монета')}. Он достал деньги и купил ${f(n,'наклейка')} по ${f(p,'монета')}. Сколько монет осталось в копилке?`,
+        text:`В копилке у Рэя лежало ${f(A,'монета')}. Он достал деньги и купил ${f(n,'наклейка')} по ${f(p,'монета')}. Сколько монет осталось в копилке?`,
         plans:[
           { t:'Сколько монет ушли на наклейки?', ok:true,
             why:'Верно. Сначала узнаем, сколько он заплатил, потом вычтем это из копилки.' },
           { t:'Сколько монет осталось в копилке?', why:'Это ГЛАВНЫЙ вопрос задачи. Пока мы не знаем стоимость наклеек, на него не ответить.' },
-          { t:'Сколько наклеек купил Гоша?', why:`Это уже написано в истории: ${f(n,'наклейка')}. Считать не нужно.` } ],
+          { t:'Сколько наклеек купил Рэй?', why:`Это уже написано в истории: ${f(n,'наклейка')}. Считать не нужно.` } ],
         steps:[{ q:'Шаг 1: сколько стоят все наклейки?', x:p, op:'×', y:n, ans:mid, label:'стоят наклейки' }],
         fin:{ op:'−', x:A, y:mid, ans, q:'Последний шаг: сколько осталось в копилке?', label:'осталось в копилке' },
         check:`${ans} + ${mid} = ${A}`
       };
     } },
-  { /* Гоша и Бакс вместе: X + (X − d) */
+  { /* Рэй и Бакс вместе: X + (X − d) */
     make(){
       const X = rand(30, 70), d = rand(8, 25);
       const mid = X - d, ans = X + mid;
       return {
-        text:`Гоша наиграл в автомате ${f(X,'монета')}, а пёс Бакс — на ${f(d,'монета')} меньше. Сколько монет они наиграли вместе?`,
+        text:`Рэй наиграл в автомате ${f(X,'монета')}, а пёс Бакс — на ${f(d,'монета')} меньше. Сколько монет они наиграли вместе?`,
         plans:[
           { t:'Сколько монет наиграл Бакс?', ok:true,
             why:'Верно. Раз у Бакса «на меньше», сначала узнаем, сколько у него, а потом сложим.' },
           { t:'Сколько монет они наиграли вместе?', why:'Это ГЛАВНЫЙ вопрос задачи. Пока мы не знаем, сколько у Бакса, на него не ответить.' },
-          { t:'На сколько монет Бакс отстал от Гоши?', why:`Это уже написано в истории: на ${f(d,'монета')}. Считать не нужно.` } ],
+          { t:'На сколько монет Бакс отстал от Рэя?', why:`Это уже написано в истории: на ${f(d,'монета')}. Считать не нужно.` } ],
         steps:[{ q:'Шаг 1: сколько монет наиграл Бакс?', x:X, op:'−', y:d, ans:mid, label:'у Бакса' }],
         fin:{ op:'+', x:X, y:mid, ans, q:'Последний шаг: сколько монет вместе?', label:'вместе' },
         check:`${ans} − ${X} = ${mid}`
@@ -2256,11 +2341,11 @@ const TYPES = [
       if (n * p === m * q) q = q < 20 ? q + 1 : q - 1;
       const s1 = n * p, s2 = m * q, ans = s1 + s2;
       return {
-        text:`В клубе Гоша купил ${f(n,'билет')} по ${f(p,'монета')} и ${f(m,'жетон')} по ${f(q,'монета')}. Сколько всего монет он заплатил?`,
+        text:`В клубе Рэй купил ${f(n,'билет')} по ${f(p,'монета')} и ${f(m,'жетон')} по ${f(q,'монета')}. Сколько всего монет он заплатил?`,
         plans:[
           { t:'Сколько стоят все билеты?', ok:true,
             why:'Верно. Считаем по очереди: сначала билеты, потом жетоны, а в конце складываем.' },
-          { t:'Сколько всего монет Гоша заплатил?', why:'Это ГЛАВНЫЙ вопрос задачи. Сначала посчитаем каждую покупку отдельно.' },
+          { t:'Сколько всего монет Рэй заплатил?', why:'Это ГЛАВНЫЙ вопрос задачи. Сначала посчитаем каждую покупку отдельно.' },
           { t:'Сколько стоит один жетон?', why:`Это уже написано в истории: ${f(q,'монета')}. Считать не нужно.` } ],
         steps:[
           { q:'Шаг 1: сколько стоят все билеты?', x:p, op:'×', y:n, ans:s1, label:'билеты' },
@@ -2351,7 +2436,7 @@ function renderTwo(){
   }
   else if (TW.phase === 'done'){
     body = storyCard(t.t) + `<section class="card">
-      <div class="win"><span class="win-goat" aria-hidden="true">🐐</span><div><h2>Задача решена!</h2>
+      <div class="win"><span class="win-goat" aria-hidden="true">★</span><div><h2>Задача решена!</h2>
       <p class="rule">Сначала — план, потом шаги, в конце — ответ. Так решают любые большие задачи.</p></div></div>
       ${solutionHTML(t.t)}
       <div class="row"><button class="btn mint" data-act="twnext">${TW.i + 1 < TW.tasks.length ? 'Следующая задача →' : 'Итог →'}</button></div>
@@ -2363,7 +2448,7 @@ function renderTwo(){
     if (p > (bp || 0)) store.set('twoBest', p + ':' + fn);
     const best = store.get('twoBest', '0:0');
     body = `<section class="card sh-finish">
-      <span class="win-goat" aria-hidden="true">🐐</span>
+      <span class="win-goat" aria-hidden="true">★</span>
       <h2>Раунд пройден!</h2>
       <p class="rule">План построен с первого раза: <b>${p} из ${TW.tasks.length}</b>. Ответы с первого раза: <b>${fn} из ${TW.tasks.length}</b>.</p>
       <p class="rule">${p >= 7 ? 'Отлично! Ты умеешь разбивать задачу на шаги.' : 'Главное — сначала спросить себя: «что узнать первым?» Ещё раунд!'}</p>
@@ -2512,7 +2597,7 @@ function handTo(el){
   const sc = app.querySelector('.tscene'), h = sc && sc.querySelector('.ghost-hand');
   if (!h || !el) return;
   const s = sc.getBoundingClientRect(), r = el.getBoundingClientRect();
-  T_HAND = { x: r.left - s.left + r.width / 2 - 22, y: r.top - s.top + r.height / 2 - 4 };
+  T_HAND = { x: (r.left - s.left + r.width / 2) / STAGE.k - 22, y: (r.top - s.top + r.height / 2) / STAGE.k - 4 };
   h.style.left = T_HAND.x + 'px'; h.style.top = T_HAND.y + 'px';
 }
 
@@ -2525,7 +2610,7 @@ function drawTens(){
   if (!reduced) app.querySelectorAll('[data-fid]').forEach(el => {
     const o = before[el.dataset.fid]; if (!o) return;
     const n = el.getBoundingClientRect(); if (!n.width) return;
-    const dx = o.left - n.left, dy = o.top - n.top, sx = o.width / n.width, sy = o.height / n.height;
+    const dx = (o.left - n.left) / STAGE.k, dy = (o.top - n.top) / STAGE.k, sx = o.width / n.width, sy = o.height / n.height;
     if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < .02) return;
     el.style.transformOrigin = '0 0'; el.style.transition = 'none';
     el.style.transform = `translate(${dx}px,${dy}px) scale(${sx},${sy})`;
@@ -2547,7 +2632,7 @@ function busHTML(){
   const seats = Array.from({ length:10 }, (_, i) => `<div class="seat">${pax[i] ? paxHTML(pax[i], tap, !T.demo && i === n - 1) : ''}</div>`).join('');
   return `<div class="bus ${n === 10 ? 'full' : ''} ${T.busFx}" data-fid="b${T.bus.id}">
     <div class="bus-sign" aria-label="в автобусе ${n}">${n}</div>
-    <div class="bus-body"><div class="seats">${seats}</div><div class="cab" aria-hidden="true">🐐</div></div>
+    <div class="bus-body"><div class="seats">${seats}</div><div class="cab" aria-hidden="true">😎</div></div>
     <div class="wheels" aria-hidden="true"><i></i><i></i></div></div>`;
 }
 function sceneHTML(){
@@ -2602,7 +2687,7 @@ function renderTens(){
   } else if (phase === 'done'){
     body = sceneHTML() + chainHTML() + `<div class="t-next">${T.demo
       ? '<button class="btn mint big go" data-act="tnew">Теперь ты! →</button>'
-      : '<span class="win-goat" aria-hidden="true">🐐</span><button class="btn mint big go" data-act="tnew">Ещё пример →</button>'}</div>`;
+      : '<span class="win-goat" aria-hidden="true">★</span><button class="btn mint big go" data-act="tnew">Ещё пример →</button>'}</div>`;
   } else body = sceneHTML();
   app.innerHTML = `<div class="tens-head">${topbar('Без пальцев')}
       <div class="tens-ctl">
@@ -2650,14 +2735,14 @@ HOME_TILES.push({ order:20, html: () => { return `
 let P = null;
 
 const PEN_TASKS = [
-  { kind:'build', w:5, h:3, title:'Загон 5 на 3', text:'Построй загон 5 на 3 метра: меняй ширину и высоту кнопками. Потом запусти Гошу вдоль забора, он посчитает каждый метр.' },
-  { kind:'predict', w:4, h:4, fixed:true, title:'Квадрат', text:'Квадратный загон, каждая сторона 4 метра. Сколько метров забора нужно? Сначала посчитай сам, потом проверим Гошей.' },
+  { kind:'build', w:5, h:3, title:'Загон 5 на 3', text:'Построй загон 5 на 3 метра: меняй ширину и высоту кнопками. Потом запусти Рэя вдоль забора, он посчитает каждый метр.' },
+  { kind:'predict', w:4, h:4, fixed:true, title:'Квадрат', text:'Квадратный загон, каждая сторона 4 метра. Сколько метров забора нужно? Сначала посчитай сам, потом проверим Рэем.' },
   { kind:'target', target:20, title:'Ровно 20 метров', text:'У тебя ровно 20 метров забора. Построй загон, на который уйдёт весь забор. Сколько разных загонов найдёшь?' },
   { kind:'cost', w:6, h:2, fixed:true, price:3, title:'Сколько стоит', text:'Один метр забора стоит 3 монеты. Сколько монет нужно на забор для загона 6 на 2?' },
-  { kind:'tri', sides:[3, 4, 5], predict:true, title:'Треугольный загон', text:'Загон-треугольник со сторонами 3, 4 и 5 метров. Сколько метров забора нужно? Сначала посчитай сам, потом проверим Гошей.' },
-  { kind:'tri', sides:[5, 5, 4], title:'Две стороны равны', text:'Загон-треугольник: две стороны по 5 метров и одна в 4 метра. Запусти Гошу вдоль забора и смотри, как он считает.' },
-  { kind:'tri', sides:[6, 6, 6], predict:true, title:'Три равные стороны', text:'Загон-треугольник, все три стороны по 6 метров. Сколько метров забора нужно? Сначала посчитай сам, потом проверим Гошей.' },
-  { kind:'tri', sides:[8, 5, 8], pick:true, title:'Какой треугольник?', text:'Загон-треугольник со сторонами 8, 5 и 8 метров. Посмотри на стороны и выбери, какой он. Потом запусти Гошу.' }
+  { kind:'tri', sides:[3, 4, 5], predict:true, title:'Треугольный загон', text:'Загон-треугольник со сторонами 3, 4 и 5 метров. Сколько метров забора нужно? Сначала посчитай сам, потом проверим Рэем.' },
+  { kind:'tri', sides:[5, 5, 4], title:'Две стороны равны', text:'Загон-треугольник: две стороны по 5 метров и одна в 4 метра. Запусти Рэя вдоль забора и смотри, как он считает.' },
+  { kind:'tri', sides:[6, 6, 6], predict:true, title:'Три равные стороны', text:'Загон-треугольник, все три стороны по 6 метров. Сколько метров забора нужно? Сначала посчитай сам, потом проверим Рэем.' },
+  { kind:'tri', sides:[8, 5, 8], pick:true, title:'Какой треугольник?', text:'Загон-треугольник со сторонами 8, 5 и 8 метров. Посмотри на стороны и выбери, какой он. Потом запусти Рэя.' }
 ];
 const TRI_TYPES = {
   scalene:{ name:'Разносторонний', rule:'все три стороны разные' },
@@ -2734,7 +2819,7 @@ function drawTri(svg, t){
     s += `<text class="lbl ${pos >= acc ? 'done' : ''} ${eq(i) ? 'eq' : ''}" x="${m[0] + nx * 26}" y="${m[1] + ny * 26 + 6}" text-anchor="middle">${sd[i]} м</text>`;
   }
   const gp = P.walking || P.walked ? triPoint(V, sd, pos) : cen;
-  s += `<text x="${gp[0]}" y="${gp[1] + 11}" font-size="32" text-anchor="middle">🐐</text>`;
+  s += `<text x="${gp[0]}" y="${gp[1] + 11}" font-size="32" text-anchor="middle">🏃</text>`;
   svg.innerHTML = s;
   const c = $('#pen-count'); if (c) c.textContent = pos;
 }
@@ -2761,7 +2846,7 @@ function drawPen(){
   s += `<text class="lbl ${sd[2] ? 'done' : ''}" x="${px(w / 2)}" y="${py(h) + 24}" text-anchor="middle">${w} м</text>`;
   s += `<text class="lbl ${sd[3] ? 'done' : ''}" x="${px(0) - 12}" y="${py(h / 2) + 6}" text-anchor="end">${h} м</text>`;
   const gp = P.walking || P.walked ? perimPoint(w, h, P.pos).map((v, i) => i ? py(v) : px(v)) : [px(w / 2), py(h / 2)];
-  s += `<text x="${gp[0]}" y="${gp[1] + 11}" font-size="32" text-anchor="middle">🐐</text>`;
+  s += `<text x="${gp[0]}" y="${gp[1] + 11}" font-size="32" text-anchor="middle">🏃</text>`;
   svg.innerHTML = s;
   const c = $('#pen-count'); if (c) c.textContent = P.pos;
 }
@@ -2769,7 +2854,7 @@ function penChain(w, h){
   const per = 2 * (w + h);
   const short = w === h ? `${w} × 4 = ${per}: четыре одинаковые стороны, значит, можно умножить.` : `(${w} + ${h}) × 2 = ${per}: пара сторон «${w} и ${h}» повторяется 2 раза.`;
   return `<p class="chain">${w} + ${h} + ${w} + ${h} = ${per} м</p><p class="rule">Короче: ${short}</p>
-    <p class="rule">Длина забора вокруг загона называется <b>периметр</b>. А клетки внутри — это место для Гоши: ${w} × ${h} = ${w * h} клеток. Это <b>площадь</b>.</p>`;
+    <p class="rule">Длина забора вокруг загона называется <b>периметр</b>. А клетки внутри — это место для Рэя: ${w} × ${h} = ${w * h} клеток. Это <b>площадь</b>.</p>`;
 }
 function triChain(t){
   const [a, b, c] = t.sides, per = a + b + c, type = triType(t.sides), ty = TRI_TYPES[type];
@@ -2795,22 +2880,22 @@ function penDone(){ const d = store.get('penDone', []); if (!d.includes(P.t)){ d
 function afterWalk(per){
   const t = PEN_TASKS[P.t], { w, h } = P;
   if (t.kind === 'tri'){
-    const rt = t.predict && P.pred !== per ? `<p class="rule">Гоша насчитал ${per} м, а у тебя было ${P.pred}. Посмотри, как он считал:</p>` : t.predict ? `<p class="rule"><b>Ты посчитал точно: ${per} м!</b></p>` : `<p class="rule"><b>Гоша насчитал ${per} м забора.</b></p>`;
+    const rt = t.predict && P.pred !== per ? `<p class="rule">Рэй насчитал ${per} м, а у тебя было ${P.pred}. Посмотри, как он считал:</p>` : t.predict ? `<p class="rule"><b>Ты посчитал точно: ${per} м!</b></p>` : `<p class="rule"><b>Рэй насчитал ${per} м забора.</b></p>`;
     P.result = rt + triChain(t);
     if (!t.predict || P.pred === per) penDone();
   } else if (t.kind === 'build'){
     const ok = (w === t.w && h === t.h) || (w === t.h && h === t.w);
-    P.result = (ok ? '<p class="rule"><b>Готово, загон 5 на 3!</b> Гоша насчитал:</p>' : `<p class="rule">Загон получился ${w} на ${h}, а нужен 5 на 3. Но посмотри, сколько забора ушло:</p>`) + penChain(w, h);
+    P.result = (ok ? '<p class="rule"><b>Готово, загон 5 на 3!</b> Рэй насчитал:</p>' : `<p class="rule">Загон получился ${w} на ${h}, а нужен 5 на 3. Но посмотри, сколько забора ушло:</p>`) + penChain(w, h);
     if (ok) penDone();
   } else if (t.kind === 'predict'){
-    P.result = (P.pred === per ? `<p class="rule"><b>Ты посчитал точно: ${per} м!</b></p>` : `<p class="rule">Гоша насчитал ${per} м, а у тебя было ${P.pred}. Посмотри: у квадрата 4 стороны, и каждая по 4 метра.</p>`) + penChain(w, h);
+    P.result = (P.pred === per ? `<p class="rule"><b>Ты посчитал точно: ${per} м!</b></p>` : `<p class="rule">Рэй насчитал ${per} м, а у тебя было ${P.pred}. Посмотри: у квадрата 4 стороны, и каждая по 4 метра.</p>`) + penChain(w, h);
     if (P.pred === per) penDone();
   } else if (t.kind === 'target'){
     if (per === t.target){
       const key = [Math.min(w, h), Math.max(w, h)].join('×');
       if (!P.found.includes(key)) P.found.push(key);
       const list = P.found.map(k => { const [a, b] = k.split('×').map(Number); return `<span>${a} на ${b}: места ${a * b} клеток</span>`; }).join('');
-      P.result = `<p class="rule"><b>Ровно 20 метров!</b> ${w} + ${h} + ${w} + ${h} = 20.</p><p class="rule">Найдено загонов: ${P.found.length}. ${P.found.length < 3 ? 'Попробуй найти ещё один, по-другому.' : 'Сравни места внутри: в каком загоне Гоше просторнее всего? Забор одинаковый, а места разное!'}</p><div class="found">${list}</div>`;
+      P.result = `<p class="rule"><b>Ровно 20 метров!</b> ${w} + ${h} + ${w} + ${h} = 20.</p><p class="rule">Найдено загонов: ${P.found.length}. ${P.found.length < 3 ? 'Попробуй найти ещё один, по-другому.' : 'Сравни места внутри: в каком загоне Рэю просторнее всего? Забор одинаковый, а места разное!'}</p><div class="found">${list}</div>`;
       if (P.found.length >= 2) penDone();
     } else {
       P.result = `<p class="rule">Ушло ${per} м: ${w} + ${h} + ${w} + ${h} = ${per}. ${per < 20 ? 'Забор ещё остался, сделай загон побольше.' : 'Забора не хватило, сделай загон поменьше.'}</p>`;
@@ -2831,7 +2916,7 @@ function penPick(k){
   if (k === triType(t.sides)){
     const ty = TRI_TYPES[k];
     P.picked = true;
-    P.result = `<p class="rule"><b>Верно!</b> ${ty.name} треугольник: ${ty.rule}. Одинаковые стороны покрашены одним цветом и отмечены чёрточкой. Запускай Гошу, он посчитает забор.</p>`;
+    P.result = `<p class="rule"><b>Верно!</b> ${ty.name} треугольник: ${ty.rule}. Одинаковые стороны покрашены одним цветом и отмечены чёрточкой. Запускай Рэя, он посчитает забор.</p>`;
   } else {
     P.result = `<p class="rule">Не совсем. Сравни числа: ${t.sides.join(', ')}. Сколько среди них одинаковых? Попробуй ещё.</p>`;
   }
@@ -2846,22 +2931,26 @@ function renderPen(){
   else if (needPred(t)) action = padHTML('Сколько метров забора? Твой ответ');
   else if (t.kind === 'cost' && P.phase === 'op') action = `<div class="ops">${['+','−','×',':'].map(o => `<button data-act="pop" data-op="${o}" aria-label="Действие ${o}">${o}</button>`).join('')}</div>`;
   else if (t.kind === 'cost' && P.phase === 'calc') action = padHTML('Сколько монет?');
-  app.innerHTML = topbar('Загон для Гоши') + `
+  app.innerHTML = topbar('Загон для Рэя') + `
     <div class="pen-tasks">${PEN_TASKS.map((x, i) => `<button class="${i === P.t ? 'on' : ''} ${doneList.includes(i) ? 'ok' : ''}" data-act="ptask" data-i="${i}">${i + 1}. ${x.title}</button>`).join('')}</div>
-    <section class="card">
-      <p class="rule">${t.text}</p>
-      <svg id="pen-svg" class="pen-svg" viewBox="0 0 480 320" role="img" aria-label="${tri ? 'Треугольный загон со сторонами ' + t.sides.join(', ') + ' метров' : `Загон ${P.w} на ${P.h} метров`}"></svg>
-      ${tri && (!t.pick || P.picked) ? `<p class="tri-type"><b>${TRI_TYPES[triType(t.sides)].name}</b> треугольник: ${TRI_TYPES[triType(t.sides)].rule}</p>` : ''}
-      <div class="dims">
-        ${tri ? '' : `<div class="dim">Ширина <button data-act="pdim" data-d="w-" ${dis || P.w <= 1 ? 'disabled' : ''} aria-label="Уже">−</button><output>${P.w}</output><button data-act="pdim" data-d="w+" ${dis || P.w >= 10 ? 'disabled' : ''} aria-label="Шире">+</button></div>`}
-        ${tri ? '' : `<div class="dim">Высота <button data-act="pdim" data-d="h-" ${dis || P.h <= 1 ? 'disabled' : ''} aria-label="Ниже">−</button><output>${P.h}</output><button data-act="pdim" data-d="h+" ${dis || P.h >= 6 ? 'disabled' : ''} aria-label="Выше">+</button></div>`}
-        <span class="counter">Гоша пробежал: <b id="pen-count">${P.pos}</b> м</span>
+    <section class="card pen-card">
+      <div class="pen-left">
+        <svg id="pen-svg" class="pen-svg" viewBox="0 0 480 320" role="img" aria-label="${tri ? 'Треугольный загон со сторонами ' + t.sides.join(', ') + ' метров' : `Загон ${P.w} на ${P.h} метров`}"></svg>
+        <div class="dims">
+          ${tri ? '' : `<div class="dim">Ширина <button data-act="pdim" data-d="w-" ${dis || P.w <= 1 ? 'disabled' : ''} aria-label="Уже">−</button><output>${P.w}</output><button data-act="pdim" data-d="w+" ${dis || P.w >= 10 ? 'disabled' : ''} aria-label="Шире">+</button></div>`}
+          ${tri ? '' : `<div class="dim">Высота <button data-act="pdim" data-d="h-" ${dis || P.h <= 1 ? 'disabled' : ''} aria-label="Ниже">−</button><output>${P.h}</output><button data-act="pdim" data-d="h+" ${dis || P.h >= 6 ? 'disabled' : ''} aria-label="Выше">+</button></div>`}
+          <span class="counter">Рэй пробежал: <b id="pen-count">${P.pos}</b> м</span>
+        </div>
       </div>
-      <div class="row"><button class="btn mint" data-act="pwalk" ${P.walking || needPred(t) || needPick(t) ? 'disabled' : ''}>🐐 Запустить Гошу вдоль забора</button>
-        ${doneList.includes(P.t) && P.t < PEN_TASKS.length - 1 ? '<button class="btn ghost" data-act="pnext">Следующее задание →</button>' : ''}</div>
-      ${P.pred != null && (t.kind === 'predict' || t.predict) && !P.walked ? `<p class="rule">Твой ответ: <b>${P.pred} м</b>. Запускай Гошу, проверим!</p>` : ''}
-      ${P.result}
-      ${action}
+      <div class="pen-right">
+        <p class="rule">${t.text}</p>
+        ${tri && (!t.pick || P.picked) ? `<p class="tri-type"><b>${TRI_TYPES[triType(t.sides)].name}</b> треугольник: ${TRI_TYPES[triType(t.sides)].rule}</p>` : ''}
+        <div class="row"><button class="btn mint" data-act="pwalk" ${P.walking || needPred(t) || needPick(t) ? 'disabled' : ''}>🏃 Запустить Рэя вдоль забора</button>
+          ${doneList.includes(P.t) && P.t < PEN_TASKS.length - 1 ? '<button class="btn ghost" data-act="pnext">Следующее задание →</button>' : ''}</div>
+        ${P.pred != null && (t.kind === 'predict' || t.predict) && !P.walked ? `<p class="rule">Твой ответ: <b>${P.pred} м</b>. Запускай Рэя, проверим!</p>` : ''}
+        ${P.result}
+        ${action}
+      </div>
     </section>`;
   drawPen();
   if (needPred(t)) PAD.submit = (g) => { P.pred = g; renderPen(); };
@@ -2887,8 +2976,8 @@ ACTIONS.ppick = (t) => penPick(t.dataset.k);
 ACTIONS.pop = (t) => penOp(t.dataset.op);
 HOME_TILES.push({ order:30, html: () => { const pen = store.get('penDone', []); return `
     <button class="district" data-act="go" data-go="pen">
-      <span class="ico" aria-hidden="true">🐐</span>
-      <h2>Загон для Гоши</h2>
+      <span class="ico" aria-hidden="true">🚧</span>
+      <h2>Загон для Рэя</h2>
       <p>Строим забор и узнаём, что такое периметр.</p>
       <span class="meta">${pen.length} из ${PEN_TASKS.length} заданий</span>
     </button>
@@ -2923,22 +3012,22 @@ const STAGE_NAME = { pick:'Выбрать', total:'Посчитать', pay:'З�
 const TASKS = [
   { id:1, mode:'cash', title:'Первая покупка', want:{ choc:1 }, stages:CASH,
     wallet:{ n50:1, n10:3, c5:1, c2:2, c1:2 },
-    story:'Гоша хочет шоколадку. Положи её в корзину и расплатись наличными. Сдачу проверит кассир.' },
+    story:'Рэй хочет шоколадку. Положи её в корзину и расплатись наличными. Сдачу проверит кассир.' },
   { id:2, mode:'cash', title:'Леденец и печенье', want:{ candy:1, cookie:1 }, stages:CASH,
     wallet:{ n100:1, n50:1, n10:2, c5:2, c2:2, c1:2 },
     story:'Купи леденец и печенье. Расплатись одной крупной купюрой и проверь сдачу.' },
   { id:3, mode:'cash', title:'Три одинаковых', want:{ cookie:3 }, stages:CASH, wallet:BIG_WALLET,
-    story:'Гоша берёт 3 печенья, все одинаковые. Посмотри: три одинаковых блока — это не просто плюс, это «по».' },
+    story:'Рэй берёт 3 печенья, все одинаковые. Посмотри: три одинаковых блока — это не просто плюс, это «по».' },
   { id:4, mode:'card', title:'Оплата картой', want:{ soda:1 }, stages:CARD, balance:300,
-    story:'У Гоши банковская карта, на ней 300 рублей. Он берёт газировку. Сколько останется на карте?' },
+    story:'У Рэя банковская карта, на ней 300 рублей. Он берёт газировку. Сколько останется на карте?' },
   { id:5, mode:'card', title:'Мороженое для двоих', want:{ ice:2, soda:1 }, stages:CARD, balance:500,
     story:'На карте 500 рублей. Купи 2 мороженых и одну газировку. Что останется?' },
   { id:6, mode:'cash', title:'Пончики для банды', want:{ donut:4 }, stages:CASH, wallet:BIG_WALLET,
-    story:'Гоша угощает друзей: 4 пончика. Заплати наличными и посчитай сдачу.' },
+    story:'Рэй угощает друзей: 4 пончика. Заплати наличными и посчитай сдачу.' },
   { id:7, mode:'card', title:'Хватит ли на карте?', want:{ chips:1, soda:1 }, stages:ENOUGH, balance:150, have:150,
-    story:'На карте 150 рублей. Гоша хочет чипсы и газировку. Сначала посчитай, потом реши: хватит ли?' },
+    story:'На карте 150 рублей. Рэй хочет чипсы и газировку. Сначала посчитай, потом реши: хватит ли?' },
   { id:8, mode:'cash', title:'Хватит ли в кармане?', want:{ marm:3, candy:1 }, stages:ENOUGH, have:200, notes:[100, 100],
-    story:'В кармане у Гоши две купюры по 100 рублей. Он хочет 3 мармелада и леденец. Хватит ли?' },
+    story:'В кармане у Рэя две купюры по 100 рублей. Он хочет 3 мармелада и леденец. Хватит ли?' },
   { id:9, mode:'cash', title:'Вечеринка', want:{ cake:2, candy:3 }, stages:CASH, wallet:BIG_WALLET,
     story:'Вечеринка! Нужны 2 кекса и 3 леденца. Два вида товара: посчитай каждый и сложи вместе.' },
   { id:10, mode:'card', title:'Большая закупка', want:{ soda:3, chips:2, choc:1 }, stages:CARD, balance:1000,
@@ -3075,9 +3164,9 @@ function renderMenu(){
   const d = doneList(), nextId = (TASKS.find(t => !d.includes(t.id)) || {}).id;
   app.innerHTML = topbar('Магазин сладостей') + `
   <section class="card sh-intro">
-    <div class="sh-goat" aria-hidden="true">🐐</div>
+    <div class="sh-goat" aria-hidden="true">😎</div>
     <div>
-      <h2>Гоша идёт за сладостями</h2>
+      <h2>Рэй идёт за сладостями</h2>
       <p>Цены на полке — в рублях. Деньги бывают <b>наличные</b> (купюры и монеты) и на <b>карте</b>. Сколько всё стоит? Хватит ли? Сколько сдачи или остатка? Это считаем мы.</p>
     </div>
   </section>
@@ -3092,7 +3181,7 @@ VIEWS.shopTask = () => { if (!S) return renderMenu(); draw(); };
 
 function moneyHead(){
   const t = S.t;
-  if (t.mode === 'card') return `<div class="sh-bankcard" aria-label="Карта"><span>💳 Карта Гоши</span><b>${rub(t.balance)}</b></div>`;
+  if (t.mode === 'card') return `<div class="sh-bankcard" aria-label="Карта"><span>💳 Карта Рэя</span><b>${rub(t.balance)}</b></div>`;
   if (t.notes) return `<div class="sh-pocket"><span>В кармане:</span>${t.notes.map(v => noteHTML('n' + v)).join('')}</div>`;
   return '';
 }
@@ -3147,7 +3236,7 @@ function askHTML(spec){
     h += `<ul class="steps sh-steps">${a.done.map(d => `<li>${d.ok ? '✔' : '💡'} ${d.st.reveal}</li>`).join('')}</ul>`;
   }
   if (a.solved){
-    h += `<div class="sh-win"><div class="sh-goat jump" aria-hidden="true">🐐</div><div><p class="check-line">${a.mode === 'steps' ? 'Вместе дошли до ответа!' : 'Верно!'}</p><p>${spec.win}</p></div></div>
+    h += `<div class="sh-win"><div class="sh-goat jump" aria-hidden="true">😎</div><div><p class="check-line">${a.mode === 'steps' ? 'Вместе дошли до ответа!' : 'Верно!'}</p><p>${spec.win}</p></div></div>
       <button class="btn mint" data-act="shopNext">${S.si === S.stages.length - 1 ? 'Закончить задание' : 'Дальше →'}</button></section>`;
     return h;
   }
@@ -3164,7 +3253,7 @@ function draw(){
   if (S.finished) return drawFinish();
   const st = stage();
   const vis = S.stages;
-  const stepper = `<ol class="stepper">${vis.map(x => `<li class="${x === st ? 'now' : S.stages.indexOf(x) < S.si ? 'past' : ''}">${STAGE_NAME[x]}</li>`).join('')}</ol>`;
+  const stepper = `<ol class="stepper">${vis.map(x => `<li class="${x === st ? 'now' : S.stages.indexOf(x) < S.si ? 'past' : ''}"><span>${STAGE_NAME[x]}</span></li>`).join('')}</ol>`;
   let body = '';
   if (st === 'pick'){
     body = `<div class="sh-pick">${shelfHTML()}<div class="sh-side">${basketHTML()}${S.pickFb}
@@ -3180,8 +3269,8 @@ function draw(){
     body = `<div class="sh-pick">${basketHTML()}${askHTML(S.a.spec)}</div>`;
   }
   const cashInfo = (st === 'change' && S.paid.length) ? `<div class="sh-paidnote">Ты отдал: ${S.paid.map(id => noteHTML(id)).join('')} = <b>${rub(S.paidSum)}</b></div>` : '';
-  app.innerHTML = topbar('Магазин сладостей', 'shop', '← К прилавку') + stepper + `
-    <section class="card sh-story"><div class="sh-goat" aria-hidden="true">🐐</div><div>
+  app.innerHTML = topbar('Магазин сладостей', 'shop', '← К прилавку', stepper) + `
+    <section class="card sh-story"><div class="sh-goat" aria-hidden="true">😎</div><div>
       <p class="eyebrow">Задание ${t.id} из ${TASKS.length} · ${t.mode === 'cash' ? '💵 наличные' : '💳 карта'}</p>
       <h2>${t.title}</h2><p>${t.story}</p>${S.note ? `<p class="sh-note-msg">${S.note}</p>` : ''}</div>${moneyHead()}</section>` + cashInfo + body;
   if (S.a && !S.a.solved) PAD.submit = askSubmit;
@@ -3191,7 +3280,7 @@ function draw(){
 function drawFinish(){
   const t = S.t, last = t.id === TASKS.length;
   app.innerHTML = topbar('Магазин сладостей', 'shop', '← К прилавку') + `
-  <section class="card sh-finish"><div class="sh-goat jump" aria-hidden="true">🐐</div><h2>Задание выполнено!</h2>
+  <section class="card sh-finish"><div class="sh-goat jump" aria-hidden="true">😎</div><h2>Задание выполнено!</h2>
     <p>${t.title}: корзина на ${rub(S.total)}${t.mode === 'cash' && S.paidSum ? `, заплачено ${rub(S.paidSum)}` : ''}${t.mode === 'card' ? `, на карте было ${rub(t.balance)}` : ''}.</p>
     ${basketHTML()}
     <div class="row"><button class="btn mint" data-act="${last ? 'go' : 'shopOpen'}" data-t="${t.id + 1}" data-go="shop">${last ? 'В магазин' : 'Следующее задание →'}</button>
@@ -3290,7 +3379,7 @@ function seen(tab){ const s = store.get('unitsSeen', []); if (!s.includes(tab)){
 const BENCH = 120;   // cm
 const MERKI = [
   { k:'elephant', e:'🐘', name:'Шаг слона', f:['шаг слона','шага слона','шагов слона'], v:120 },
-  { k:'goat', e:'🐐', name:'Шаг Гоши', f:['шаг Гоши','шага Гоши','шагов Гоши'], v:40 },
+  { k:'goat', e:'👣', name:'Шаг Рэя', f:['шаг Рэя','шага Рэя','шагов Рэя'], v:40 },
   { k:'pencil', e:'✏️', name:'Карандаш', f:['карандаш','карандаша','карандашей'], v:20 },
   { k:'palm', e:'🖐️', name:'Ладошка', f:['ладошка','ладошки','ладошек'], v:10 },
   { k:'cm', e:'📏', name:'Сантиметр', f:['сантиметр','сантиметра','сантиметров'], v:1 }
@@ -3316,13 +3405,13 @@ function whyHTML(){
   return `
   <section class="card">
     <h2>Какой длины скамейка?</h2>
-    <p class="rule">Гоша хочет заказать у столяра такую же скамейку. Нужно сказать, какой она длины. Измерь её разными мерками.</p>
+    <p class="rule">Рэй хочет заказать у столяра такую же скамейку. Нужно сказать, какой она длины. Измерь её разными мерками.</p>
     <div class="u-bench-wrap"><div class="u-bench" aria-label="Скамейка"></div>${scene || '<p class="u-res muted">Выбери мерку внизу ↓</p>'}</div>
     <div class="picks u-mp">${MERKI.map(x => `<button class="${W.m === x.k ? 'on' : ''}" data-act="umerka" data-k="${x.k}"><span aria-hidden="true">${x.e}</span> ${x.name}${W.tried.includes(x.k) ? ' ✓' : ''}</button>`).join('')}</div>
     ${tried.length ? `<ul class="u-tried">${tried.map(x => `<li><span aria-hidden="true">${x.e}</span> <b>${BENCH / x.v}</b> ${plural(BENCH / x.v, x.f)}</li>`).join('')}</ul>` : ''}
     ${tried.length >= 2 ? `<div class="u-lesson"><b>Скамейка та же, а числа разные!</b>
-      Если Гоша скажет столяру «сделай скамейку длиной ${BENCH / tried[0].v}», тот не поймёт: ${BENCH / tried[0].v} чего? Шагов слона? Ладошек? А у всех ладошки разные.
-      Поэтому люди договорились об одинаковых мерках. ${W.tried.includes('cm') ? '<br><b>Скамейка = 120 см</b> — это поймёт любой столяр: сантиметр одинаковый в Сан-Козлосе, в Москве и даже на Луне.' : 'Попробуй сантиметр — его знают все.'}</div>` : ''}
+      Если Рэй скажет столяру «сделай скамейку длиной ${BENCH / tried[0].v}», тот не поймёт: ${BENCH / tried[0].v} чего? Шагов слона? Ладошек? А у всех ладошки разные.
+      Поэтому люди договорились об одинаковых мерках. ${W.tried.includes('cm') ? '<br><b>Скамейка = 120 см</b> — это поймёт любой столяр: сантиметр одинаковый в Лос-Сантосе, в Москве и даже на Луне.' : 'Попробуй сантиметр — его знают все.'}</div>` : ''}
   </section>
   <section class="card">
     <h2>Число + мерка = величина</h2>
@@ -3336,7 +3425,7 @@ function whyHTML(){
 
 /* ---------- length: magnifier + practice ---------- */
 const LEN_ROWS = [
-  { title:'1 метр = 10 дециметров', cell:'дм', ex:'1 м — Гоша от носа до хвоста. Шаг взрослого.' },
+  { title:'1 метр = 10 дециметров', cell:'дм', ex:'1 м — Рэй от носа до хвоста. Шаг взрослого.' },
   { title:'1 дециметр = 10 сантиметров', cell:'см', ex:'1 дм — ширина ладошки.' },
   { title:'1 сантиметр = 10 миллиметров', cell:'мм', ex:'1 см — ширина ногтя на мизинце. 1 мм — толщина монетки.' }
 ];
@@ -3398,7 +3487,7 @@ function lenHTML(){
       <div class="u-col">
         ${lenLine(q, L.ok)}
         ${L.msg ? `<div class="trap">${L.msg}</div>` : ''}
-        ${L.ok ? `<div class="win"><span class="win-goat" aria-hidden="true">🐐</span><div><h2>Верно!</h2><p class="check-line">${lenWin(q)}</p></div></div>
+        ${L.ok ? `<div class="win"><span class="win-goat" aria-hidden="true">★</span><div><h2>Верно!</h2><p class="check-line">${lenWin(q)}</p></div></div>
           <div class="row"><button class="btn mint" data-act="ulnew">Ещё пример →</button></div>` : ''}
       </div>
       ${L.ok ? '' : padHTML(lenPad(q))}
@@ -3467,7 +3556,7 @@ function areaHTML(){
       <div class="row"><button class="btn mint" data-act="ustep">Заполнить весь квадрат</button></div>` : ''}
     ${A.step >= 2 ? `<div class="u-lesson"><b>10 рядов по 10 = 100 плиток.</b> Значит, <b>1 дм² = 100 см²</b>, а не 10! Сторона длиннее в 10 раз, а плиток внутри больше в 100 раз: квадрат растёт сразу в две стороны.${G === 100 ? ' Ты угадал!' : ''}</div>
       <div class="u-eqs"><span>1 см² = 100 мм²</span><span>1 дм² = 100 см²</span><span>1 м² = 100 дм²</span></div>
-      <p class="tip-ink">1 м² — квадрат 1 м на 1 м. На нём как раз помещается Гоша, свернувшись клубочком. Комнаты и ковры меряют в м².</p>` : ''}
+      <p class="tip-ink">1 м² — квадрат 1 м на 1 м. На нём как раз помещается Рэй, свернувшись клубочком. Комнаты и ковры меряют в м².</p>` : ''}
   </section>
   <section class="card">
     <h2>Сколько квадратных сантиметров?</h2>
@@ -3476,7 +3565,7 @@ function areaHTML(){
         <p class="rule">${q.part ? 'Плитки уложили только по краю. Сколько их поместится во весь прямоугольник?' : 'Каждая плитка — 1 см². Сколько см² занимает прямоугольник?'}</p>
         ${tiles(q.w, q.h, 'practice', { fill:(x, y) => !q.part || U.area.ok || x === 0 || y === 0 })}
         ${U.area.msg ? `<div class="trap">${U.area.msg}</div>` : ''}
-        ${U.area.ok ? `<div class="win"><span class="win-goat" aria-hidden="true">🐐</span><div><h2>Верно!</h2><p class="check-line">${q.h} × ${q.w} = ${q.w * q.h} см²</p></div></div>
+        ${U.area.ok ? `<div class="win"><span class="win-goat" aria-hidden="true">★</span><div><h2>Верно!</h2><p class="check-line">${q.h} × ${q.w} = ${q.w * q.h} см²</p></div></div>
           <div class="row"><button class="btn mint" data-act="uanew">Ещё прямоугольник →</button></div>` : ''}
       </div>
       ${U.area.ok ? '' : padHTML('Площадь, см²')}
@@ -3549,7 +3638,7 @@ function cmpHTML(){
   const C = U.cmp, best = store.get('unitsBest', 0);
   if (C.i >= C.qs.length) return `
     <section class="card sh-finish">
-      <span class="win-goat" aria-hidden="true">🐐</span>
+      <span class="win-goat" aria-hidden="true">★</span>
       <h2>${C.score} из ${C.qs.filter(q => !q.re).length}!</h2>
       <p class="rule">${C.score === C.qs.filter(q => !q.re).length ? 'Ни одной ошибки. Мастер мер!' : C.score >= 7 ? 'Отлично! Ещё раунд — и будет без ошибок.' : 'Главное — сначала перевести в одинаковые мерки. Попробуй ещё раз!'}</p>
       <p class="tip-ink">Лучший результат: ${best} из 10. Ошибки возвращаются в конце раунда — их надо решить.</p>
@@ -3846,7 +3935,7 @@ function labHTML(L){
   const finalQ = mode === 'solo' && !S.done ? `<p class="tk-final-q">${p.final.q}</p>` : '';
   const helpBtn = mode === 'solo' && !S.done && S.miss ? `<button class="btn ghost" data-act="tklab" data-lab="${L.key}" data-op="help">Разобрать по шагам</button>` : '';
   const giveStep = mode === 'with' && !S.done && S.stepMiss >= 2 ? `<button class="btn ghost" data-act="tklab" data-lab="${L.key}" data-op="give">Покажи этот шаг</button>` : '';
-  const win = S.done ? `<div class="win"><span class="win-goat" aria-hidden="true">🐐</span><div><h2>${S.given ? 'Вот ответ' : 'Верно!'}${S.star ? ' <span class="tk-star-pop">+1 ⭐</span>' : ''}</h2><p class="check-line">${p.win}</p></div></div>
+  const win = S.done ? `<div class="win"><span class="win-goat" aria-hidden="true">★</span><div><h2>${S.given ? 'Вот ответ' : 'Верно!'}${S.star ? ' <span class="tk-star-pop">+1 ⭐</span>' : ''}</h2><p class="check-line">${p.win}</p></div></div>
       ${p.check ? `<p class="tk-check">✔ ${p.check}</p>` : ''}
       ${p.alt ? `<details class="tk-alt"><summary>Другой способ решить</summary>${p.alt}</details>` : ''}
       ${S.streakMsg ? `<div class="u-lesson">${S.streakMsg}</div>` : ''}
@@ -4094,7 +4183,7 @@ function feelHTML(){
 const HOW = [
   ['🪥', 'Почистить зубы', 2, 'мин'], ['🏫', 'Урок в школе', 45, 'мин'], ['⚽', 'Футбольный матч', 90, 'мин'], ['😴', 'Ночной сон', 9, 'ч'],
   ['🤧', 'Чихнуть', 1, 'с'], ['📺', 'Серия мультика', 20, 'мин'], ['🍝', 'Сварить макароны', 10, 'мин'], ['✈️', 'Полёт из Москвы во Владивосток', 8, 'ч'],
-  ['🏃', 'Пробежать 60 метров', 12, 'с'], ['🎬', 'Фильм в кино', 2, 'ч'], ['🐐', 'Гоша грызёт морковку', 30, 'с'], ['🚂', 'Поезд из Москвы в Петербург', 4, 'ч'],
+  ['🏃', 'Пробежать 60 метров', 12, 'с'], ['🎬', 'Фильм в кино', 2, 'ч'], ['🍔', 'Рэй съедает бургер', 30, 'с'], ['🚂', 'Поезд из Москвы в Петербург', 4, 'ч'],
   ['🔔', 'Перемена', 10, 'мин'], ['👟', 'Завязать шнурки', 15, 'с'], ['🎂', 'Испечь торт', 1, 'ч']
 ];
 const UNITW = { с:'секунд', мин:'минут', ч:'часов' };
@@ -4106,7 +4195,7 @@ function howHTML(){
     <div class="u-lesson">${Hh.score} из ${Hh.qs.length}! ${Hh.score === Hh.qs.length ? 'Ты отлично чувствуешь время.' : 'Секунды — это очень быстро, минуты — дела, часы — долгие дела.'}</div>
     <div class="row"><button class="btn mint" data-act="thow" data-v="again">Ещё раунд →</button></div></section>`;
   const [e, name, n, u] = Hh.qs[Hh.i], P = Hh.picked;
-  const funny = (x) => x === u ? '' : ({ с:`${n} ${plural(n, ['секунда', 'секунды', 'секунд'])}? Так быстро даже Гоша не успеет! 😄`, мин:`${n} ${plural(n, ['минута', 'минуты', 'минут'])}? Нет, тут ${u === 'с' ? 'гораздо быстрее' : 'гораздо дольше'}.`, ч:`${n} ${plural(n, ['час', 'часа', 'часов'])}?! Это же почти вечность! 😄` })[x];
+  const funny = (x) => x === u ? '' : ({ с:`${n} ${plural(n, ['секунда', 'секунды', 'секунд'])}? Так быстро даже Рэй не успеет! 😄`, мин:`${n} ${plural(n, ['минута', 'минуты', 'минут'])}? Нет, тут ${u === 'с' ? 'гораздо быстрее' : 'гораздо дольше'}.`, ч:`${n} ${plural(n, ['час', 'часа', 'часов'])}?! Это же почти вечность! 😄` })[x];
   return `<section class="card">
     <div class="tk-lab-head"><h2>Что сколько длится?</h2><span class="u-count">${Hh.i + 1} / ${Hh.qs.length} · ✓ ${Hh.score}</span></div>
     <div class="tk-how"><span class="tk-how-e" aria-hidden="true">${e}</span><p>${name} — это примерно <b>${n} ___</b></p></div>
@@ -4220,7 +4309,7 @@ function dayWord(h){
   if (h === 12) return 'полдень — 12 часов дня';
   const x = h % 12; return `${x} ${plural(x, ['час', 'часа', 'часов'])} ${partOf(h)}`;
 }
-const ACT = (h) => h < 7 || h >= 22 ? '😴 Гоша крепко спит' : h === 7 ? '🥣 завтрак и сборы в школу' : h < 13 ? '🏫 уроки в школе' : h === 13 ? '🍲 обед'
+const ACT = (h) => h < 7 || h >= 22 ? '😴 Рэй крепко спит' : h === 7 ? '🥣 завтрак и сборы в школу' : h < 13 ? '🏫 уроки в школе' : h === 13 ? '🍲 обед'
   : h < 16 ? '⚽ гуляет с друзьями' : h < 18 ? '📚 делает домашку' : h === 18 ? '🧩 своё время: игры и конструктор' : h === 19 ? '🍽️ ужин' : '📖 книжка и в кровать';
 function lapSVG(frac, on, label){
   const r = 34, d = frac >= 1 ? `M50 16a34 34 0 1 0 .01 0Z` : frac > 0 ? (() => { const a = frac * 2 * Math.PI, x = 50 + r * Math.sin(a), y = 50 - r * Math.cos(a); return `M50 50L50 16A34 34 0 ${frac > .5 ? 1 : 0} 1 ${x.toFixed(1)} ${y.toFixed(1)}Z`; })() : '';
@@ -4236,7 +4325,7 @@ function ribbonHTML(){
   return `
   <section class="card">
     <h2>Часовая стрелка за сутки делает два круга</h2>
-    <p class="rule">В сутках <b>24 часа</b>, а на циферблате только <b>12</b> чисел. Поэтому короткая стрелка проходит круг <b>дважды</b>: ночью и утром — первый круг, днём и вечером — второй. Нажимай на ленту суток и смотри, что в это время делает Гоша.</p>
+    <p class="rule">В сутках <b>24 часа</b>, а на циферблате только <b>12</b> чисел. Поэтому короткая стрелка проходит круг <b>дважды</b>: ночью и утром — первый круг, днём и вечером — второй. Нажимай на ленту суток и смотри, что в это время делает Рэй.</p>
     
     <div class="tk-ribbon" role="group" aria-label="Часы суток">${Array.from({ length:25 }, (_, i) => `<button class="${i === h ? 'on' : ''} p${i % 24 < 5 || i >= 22 ? 'n' : i < 8 ? 'm' : i < 18 ? 'd' : 'e'}" data-act="tday" data-h="${i}" aria-label="${i}:00"><span>${i}</span></button>`).join('')}</div>
     <div class="tk-ribbon-cap"><span>🌙 ночь</span><span>🌅 утро</span><span>☀️ день</span><span>🌆 вечер</span><span>🌙</span></div>
@@ -4326,15 +4415,15 @@ function calcGen(){
   if (add){
     let am, bm; do { am = m5(); bm = m5(); } while (hard ? am + bm < 65 : am + bm >= 60);
     a = rand(0, 3) * 60 + am; b = rand(0, 2) * 60 + bm;
-    if (a < 60 && b < 60 && Math.random() < .6) story = pick([`Гоша делал математику ${durTxt(a)}, а потом русский ${durTxt(b)}. Сколько времени он делал уроки?`,
-      `Гоша ехал на автобусе ${durTxt(a)}, а потом шёл пешком ${durTxt(b)}. Сколько времени занял путь?`]);
+    if (a < 60 && b < 60 && Math.random() < .6) story = pick([`Рэй делал математику ${durTxt(a)}, а потом русский ${durTxt(b)}. Сколько времени он делал уроки?`,
+      `Рэй ехал на автобусе ${durTxt(a)}, а потом шёл пешком ${durTxt(b)}. Сколько времени занял путь?`]);
   } else {
     let am, bm; do { am = 5 * rand(0, 11); bm = m5(); } while (hard ? am >= bm : am < bm);
     const ah = rand(1, 4), bh = rand(0, ah - (am < bm ? 1 : 0));
     a = ah * 60 + am; b = bh * 60 + bm;
     if (a - b <= 0){ b = bm; a = ah * 60 + am; }
-    if (Math.random() < .4 && a >= 60) story = pick([`Мультфильм идёт ${durTxt(a)}. Гоша посмотрел ${durTxt(b)}. Сколько ещё осталось?`,
-      `На прогулку дали ${durTxt(a)}. Гоша гуляет уже ${durTxt(b)}. Сколько времени осталось?`]);
+    if (Math.random() < .4 && a >= 60) story = pick([`Мультфильм идёт ${durTxt(a)}. Рэй посмотрел ${durTxt(b)}. Сколько ещё осталось?`,
+      `На прогулку дали ${durTxt(a)}. Рэй гуляет уже ${durTxt(b)}. Сколько времени осталось?`]);
   }
   const ah = Math.floor(a / 60), am = a % 60, bh = Math.floor(b / 60), bm = b % 60;
   const res = add ? a + b : a - b, op = add ? '+' : '−';
@@ -4385,22 +4474,22 @@ function calcHTML(){
 /* ---------- tab «Задачи» ---------- */
 const END = [
   (S, D) => [`Мультфильм начался в ${S} и шёл ${D}. Во сколько он закончился?`, 'Мультфильм закончился в'],
-  (S, D) => [`Гоша поставил пирог в духовку в ${S}. Пирог печётся ${D}. Во сколько его доставать?`, 'Пирог доставать в'],
+  (S, D) => [`Рэй поставил пирог в духовку в ${S}. Пирог печётся ${D}. Во сколько его доставать?`, 'Пирог доставать в'],
   (S, D) => [`Поезд отправился в ${S} и был в пути ${D}. Во сколько он прибыл?`, 'Поезд прибыл в'],
   (S, D) => [`Футбольный матч начался в ${S} и длился ${D}. Когда он закончился?`, 'Матч закончился в'],
-  (S, D) => [`Гоша начал делать уроки в ${S} и занимался ${D}. Во сколько он закончил?`, 'Гоша закончил в']
+  (S, D) => [`Рэй начал делать уроки в ${S} и занимался ${D}. Во сколько он закончил?`, 'Рэй закончил в']
 ];
 const START = [
   (E, D) => [`Урок закончился в ${E}. Он длился ${D}. Во сколько начался урок?`, 'Урок начался в'],
   (E, D) => [`Фильм закончился в ${E} и шёл ${D}. Во сколько он начался?`, 'Фильм начался в'],
-  (E, D) => [`Автобус приехал в Сан-Козлос в ${E}. Он ехал ${D}. Во сколько автобус выехал?`, 'Автобус выехал в'],
-  (E, D) => [`Гоше нужно быть в школе в ${E}. Дорога занимает ${D}. Во сколько выходить из дома?`, 'Выходить в']
+  (E, D) => [`Автобус приехал в Лос-Сантос в ${E}. Он ехал ${D}. Во сколько автобус выехал?`, 'Автобус выехал в'],
+  (E, D) => [`Рэю нужно быть в школе в ${E}. Дорога занимает ${D}. Во сколько выходить из дома?`, 'Выходить в']
 ];
 const DUR = [
   (S, E) => [`Спектакль начался в ${S} и закончился в ${E}. Сколько он шёл?`, 'Спектакль шёл'],
   (S, E) => [`Поезд отправился в ${S} и прибыл в ${E}. Сколько времени он был в пути?`, 'В пути'],
-  (S, E) => [`Гоша пришёл в бассейн в ${S}, а ушёл в ${E}. Сколько времени он там был?`, 'В бассейне'],
-  (S, E) => [`Магазин открылся в ${S}, а Гоша пришёл туда в ${E}. Сколько времени магазин уже работал?`, 'Магазин работал']
+  (S, E) => [`Рэй пришёл в бассейн в ${S}, а ушёл в ${E}. Сколько времени он там был?`, 'В бассейне'],
+  (S, E) => [`Магазин открылся в ${S}, а Рэй пришёл туда в ${E}. Сколько времени магазин уже работал?`, 'Магазин работал']
 ];
 let lastType = null;
 function taskGen(){
@@ -4647,7 +4736,7 @@ function blitzHTML(){
     ${best ? `<p class="tk-word">🏆 Твой рекорд: ${best}</p>` : ''}
     <div class="row"><button class="btn tk-huge" data-act="cblitz" data-v="go">Поехали!</button><button class="btn ghost" data-act="cblitz" data-v="close">Назад</button></div></section>`;
   if (B.phase === 'done') return `<section class="card tk-blitz sh-finish">
-    <span class="win-goat" aria-hidden="true">🐐</span><h2>${B.score} ${plural(B.score, ['часы', 'часов', 'часов'])} за минуту!</h2>
+    <span class="win-goat" aria-hidden="true">★</span><h2>${B.score} ${plural(B.score, ['часы', 'часов', 'часов'])} за минуту!</h2>
     <p class="tk-word">${B.record ? '🏆 Новый рекорд!' : best ? `Рекорд: ${best}. Ещё чуть-чуть!` : ''}</p>
     ${B.miss ? `<p class="tip-ink">Ошибок: ${B.miss}. Не спеши с короткой стрелкой — смотри, какое число она уже прошла.</p>` : '<p class="tip-ink">Ни одной ошибки!</p>'}
     <div class="row"><button class="btn mint" data-act="cblitz" data-v="go">Ещё раз</button><button class="btn ghost" data-act="cblitz" data-v="close">Назад</button></div></section>`;
@@ -4708,7 +4797,7 @@ function wallHTML(){
     <p class="rule">Посмотри на свои настоящие часы на стене. Сколько они показывают? Введи — и я сверю с точным временем.</p>
     <div class="calc-grid"><div class="u-col">
       ${W.res ? `<div class="tk-two"><div class="tk-mini">${face(W.res.now, { hourSector:h12(W.res.now) })}</div><div class="u-col">
-          ${W.res.ok ? `<div class="win"><span class="win-goat" aria-hidden="true">🐐</span><div><h2>Верно!</h2><p class="check-line">Сейчас ${clk(W.res.now, true)}</p></div></div>
+          ${W.res.ok ? `<div class="win"><span class="win-goat" aria-hidden="true">★</span><div><h2>Верно!</h2><p class="check-line">Сейчас ${clk(W.res.now, true)}</p></div></div>
             <p class="tip-ink">На телефоне или электронных часах сейчас ${clk(W.res.now)}${H(W.res.now) >= 12 ? ` — это ${h12(W.res.now)} ${plural(h12(W.res.now), ['час', 'часа', 'часов'])} ${H(W.res.now) < 17 ? 'дня' : 'вечера'} плюс 12` : ''}.</p>`
           : `<div class="trap">${W.res.msg}</div>`}</div></div>` : ''}
       <p class="tip-ink">Если часы на стене спешат или отстают на минутку — это не страшно.</p>
@@ -4760,7 +4849,7 @@ function setHTML(){
         ${S.ok ? '' : `<div class="tk-btns">${bt(-60, '−1 ч')}${bt(-5, '−5 мин')}${bt(-1, '−1 мин')}${bt(1, '+1 мин')}${bt(5, '+5 мин')}${bt(60, '+1 ч')}</div>`}
         ${S.msg ? `<div class="trap">${S.msg}</div>` : ''}
         ${S.miss >= 2 && !S.ok ? '<p class="tip-ink">Пунктиром показано, где должны быть стрелки.</p>' : ''}
-        ${S.ok ? `<div class="win"><span class="win-goat" aria-hidden="true">🐐</span><div><h2>Верно!</h2><p class="check-line">${clk(tg, true)}</p></div></div>
+        ${S.ok ? `<div class="win"><span class="win-goat" aria-hidden="true">★</span><div><h2>Верно!</h2><p class="check-line">${clk(tg, true)}</p></div></div>
           <div class="row"><button class="btn mint" data-act="csetnew">Ещё →</button></div>` : '<div class="row"><button class="btn" data-act="csetcheck">Проверить</button></div>'}
       </div>
     </div>
@@ -4795,7 +4884,7 @@ function wordsHTML(){
   if (!W.quiz) newQuiz();
   const Q = W.quiz, done = Q.i >= Q.qs.length;
   let quiz;
-  if (done) quiz = `<div class="sh-finish"><span class="win-goat" aria-hidden="true">🐐</span><h2>${Q.score} из ${Q.qs.filter(q => !q.re).length}!</h2>
+  if (done) quiz = `<div class="sh-finish"><span class="win-goat" aria-hidden="true">★</span><h2>${Q.score} из ${Q.qs.filter(q => !q.re).length}!</h2>
     <p class="rule">${Q.score === Q.qs.filter(q => !q.re).length ? 'Без ошибок!' : 'Ошибки возвращались в конце — так они лучше запоминаются.'}</p>
     <div class="row"><button class="btn mint" data-act="cwq" data-v="again">Ещё раунд →</button></div></div>`;
   else {
@@ -4832,7 +4921,7 @@ function elapsedGen(){
   const spin = (from, to, id) => `<button class="btn ghost" data-act="cspin" data-from="${from}" data-to="${to}" data-id="${id}">▶ Прокрутить стрелки</button><span class="tk-count" id="${id}-count"></span>`;
   if (type === 'dur'){
     const steps = durSteps(S, E, true);
-    return { meta:{ type, S, D, E }, title:'Сколько прошло?', text:'Гоша начал строить башню из кубиков, когда часы показывали время слева. Закончил — когда показывали время справа. Сколько он строил?',
+    return { meta:{ type, S, D, E }, title:'Сколько прошло?', text:'Рэй начал строить башню из кубиков, когда часы показывали время слева. Закончил — когда показывали время справа. Сколько он строил?',
       visual:(k, done) => `<div class="tk-pair"><div><small>Начало</small>${face(S, { id:'el-a' })}</div><div><small>Конец</small>${face(E)}</div></div>
         ${k >= 1 || done || TK.LABS.elapsed.lvl() === 'watch' ? `<div class="row">${spin(S, E, 'el-a')}</div>` : ''}
         ${k >= 1 || done ? TK.timeline({ a:S, b:E, flags:[{ t:S, cls:'s' }, { t:E, cls:'e' }], jumps:steps.slice(0, k).map(s => s.jump).filter(Boolean) }) : ''}`,
@@ -5105,7 +5194,9 @@ HOME_TILES.push({ order:55, html: () => { const s = store.get('measSeen', []).le
   }
   function chainHTML(kind, ai, bi2){
     if (ai === bi2) return '<div class="ml-chain"><p class="ml-same">Это одна и та же мерка 🙂 Выбери вторую, другую.</p></div>';
-    const hi = Math.max(ai, bi2), lo = Math.min(ai, bi2), c = chain(kind, hi, lo), ap = c.approx ? '≈ ' : '';
+    const hi = Math.max(ai, bi2), lo = Math.min(ai, bi2), c = chain(kind, hi, lo);
+    if (!c || !c.big || !c.small) return '<div class="ml-chain"><p class="ml-same">Выбери две мерки из этой лесенки.</p></div>';
+    const ap = c.approx ? '≈ ' : '';
     const mult = c.factors && c.factors.length > 1 ? c.factors.map(f => `<i class="ml-f">${nf(f)}</i>`).join('<span class="ml-op">×</span>') + '<span class="ml-op">=</span>' : '';
     const say = `Один ${uf(kind, c.big.u)} это ${c.approx ? 'примерно ' : ''}${nf(c.total)} ${measName(kind, c.small.u, c.total)}.`;
     const by = c.factors && c.factors.length > 1 ? ` Считаем по ступенькам: ${c.factors.join(' умножить на ')}.` : '';
@@ -5409,7 +5500,7 @@ function cmpHTML(){
   const C = P.cmp, best = store.get('measCmpBest', 0), total = C.qs.filter(q => !q.re).length;
   if (C.i >= C.qs.length){
     if (!C.saved){ C.saved = true; if (C.score > best) store.set('measCmpBest', C.score); }
-    return `<section class="card sh-finish"><span class="win-goat" aria-hidden="true">🐐</span><h2>${C.score} из ${total}!</h2>
+    return `<section class="card sh-finish"><span class="win-goat" aria-hidden="true">★</span><h2>${C.score} из ${total}!</h2>
       <p class="rule">${C.score === total ? 'Ни одной ошибки. Мастер мер!' : C.score >= 7 ? 'Отлично! Ещё раунд — и будет без ошибок.' : 'Главное — сначала перевести в одинаковые мерки. Попробуй ещё раз!'}</p>
       <p class="tip-ink">Лучший результат: ${Math.max(best, C.score)} из ${total}. Ошибки возвращаются в конце раунда — их надо решить.</p>
       <div class="row"><button class="btn mint" data-act="mpcmp" data-v="again">Ещё раунд →</button></div></section>`;
@@ -5435,7 +5526,7 @@ ACTIONS.mpcmp = (t) => {
 /* ---------- 3. Подбери мерку / 4. Нелепицы: общий список ---------- */
 /* [эмодзи, что, число, правильная единица, мин, макс (разумные значения в этой единице), { неправильная единица: смешное объяснение }] */
 const PICK = [
-  ['🐐', 'Рост Гоши', 120, 'см', 70, 170, { мм:'120 мм — Гоша ниже линейки!', м:'120 м — Гоша выше 40-этажного дома!', км:'120 км — Гоша выше облаков!' }],
+  ['🧍', 'Рост Рэя', 120, 'см', 70, 170, { мм:'120 мм — Рэй ниже линейки!', м:'120 м — Рэй выше 40-этажного дома!', км:'120 км — Рэй выше облаков!' }],
   ['🐜', 'Длина муравья', 4, 'мм', 1, 15, { см:'4 см — муравей с мизинец!', м:'4 м — муравей длиннее легковушки!', км:'4 км — муравей до самого горизонта!' }],
   ['👵', 'Дорога до бабушки', 30, 'км', 5, 300, { м:'30 м — бабушка живёт за соседним забором?', см:'30 см — бабушка живёт на твоей парте!', мм:'30 мм — бабушка поселилась в твоём пенале!' }],
   ['📏', 'Длина линейки', 30, 'см', 15, 100, { мм:'30 мм — это ластик, а не линейка!', м:'30 м — линейка длиннее школьного коридора!', км:'30 км — линейкой можно измерить область!' }],
@@ -5446,7 +5537,7 @@ const PICK = [
   ['✈️', 'Перелёт Москва — Сочи', 1500, 'км', 1000, 2000, { м:'1500 м — самолёт и разогнаться не успеет!', см:'1500 см — это длина автобуса, а не перелёт!', мм:'1500 мм — самолёт не взлетит с места!' }],
   ['✏️', 'Карандаш в длину', 15, 'см', 10, 20, { мм:'15 мм — это огрызок!', м:'15 м — карандаш длиннее автобуса!', км:'15 км — карандаш торчит за город!' }],
   ['🐘', 'Вес слона', 5, 'т', 3, 7, { г:'5 г — слон как скрепка!', кг:'5 кг — слон как пакет сахара!', ц:'5 ц — слон весит как телёнок!' }],
-  ['🎒', 'Рюкзак Гоши весит', 3, 'кг', 1, 8, { г:'3 г — рюкзак как пёрышко!', т:'3 т — рюкзак тяжелее грузовика!', ц:'3 ц — рюкзак тяжелее взрослого дяди!' }],
+  ['🎒', 'Рюкзак Рэя весит', 3, 'кг', 1, 8, { г:'3 г — рюкзак как пёрышко!', т:'3 т — рюкзак тяжелее грузовика!', ц:'3 ц — рюкзак тяжелее взрослого дяди!' }],
   ['🍎', 'Яблоко весит', 150, 'г', 80, 300, { кг:'150 кг — яблоко тяжелее штангиста!', т:'150 т — яблоко как поезд!', ц:'150 ц — яблоко как грузовик!' }],
   ['🐈', 'Кот весит', 4, 'кг', 2, 8, { г:'4 г — кот как скрепка!', т:'4 т — кот тяжелее слона!', ц:'4 ц — кот как телёнок!' }],
   ['🥔', 'Мешок картошки', 50, 'кг', 20, 80, { г:'50 г — три картофелины, а не мешок!', т:'50 т — мешок как целый вагон!', ц:'50 ц — мешок тяжелее машины!' }],
@@ -5459,9 +5550,9 @@ const PICK = [
   ['🧃', 'Стакан сока', 200, 'мл', 150, 300, { л:'200 л — стакан сока как целая цистерна!' }],
   ['🏫', 'Один урок', 45, 'мин', 30, 60, { с:'45 с — звонок прозвенит, пока ты садишься!', ч:'45 ч — урок почти на двое суток!', сут:'45 сут — урок на полтора месяца!' }],
   ['🔔', 'Перемена', 10, 'мин', 5, 20, { с:'10 с — даже до туалета не добежишь!', ч:'10 ч — перемена на полдня!', сут:'10 сут — перемена на полторы недели!' }],
-  ['😴', 'Ночной сон', 9, 'ч', 7, 11, { мин:'9 мин — только глаза закрыл!', с:'9 с — просто моргнул!', сут:'9 сут — Гоша спит, как медведь в берлоге!' }],
+  ['😴', 'Ночной сон', 9, 'ч', 7, 11, { мин:'9 мин — только глаза закрыл!', с:'9 с — просто моргнул!', сут:'9 сут — Рэй спит, как медведь в берлоге!' }],
   ['🤧', 'Один чих', 1, 'с', 1, 3, { мин:'1 мин — чихаешь целую минуту!', ч:'1 ч — чихаешь целый час!', сут:'1 сут — «апчхи» длиной в день!' }],
-  ['🎂', 'Возраст Гоши', 10, 'год', 9, 11, { мес:'10 мес — Гоша ещё ползает!', сут:'10 сут — Гоша родился на прошлой неделе!', нед:'10 нед — Гоша ещё в пелёнках!' }],
+  ['🎂', 'Возраст Рэя', 10, 'год', 9, 11, { мес:'10 мес — Рэй ещё ползает!', сут:'10 сут — Рэй родился на прошлой неделе!', нед:'10 нед — Рэй ещё в пелёнках!' }],
   ['🛫', 'Полёт Москва — Владивосток', 8, 'ч', 7, 10, { мин:'8 мин — самолёт как ракета!', сут:'8 сут — самолёт-черепаха!', с:'8 с — взлетел и сразу приземлился!' }],
   ['🏖️', 'Летние каникулы', 3, 'мес', 2, 3, { сут:'3 сут — каникулы как выходные!', год:'3 года — вот это каникулы!', нед:'3 нед — это только половина каникул!' }],
   ['🍝', 'Варить макароны', 10, 'мин', 7, 15, { с:'10 с — макароны сырые!', ч:'10 ч — каша из макарон!', сут:'10 сут — макароны уже плесневеют!' }],
@@ -5476,7 +5567,7 @@ function pkHTML(){
   const S = P.pk, best = store.get('measPickBest', 0);
   if (S.i >= S.qs.length){
     if (!S.saved){ S.saved = true; if (S.score > best) store.set('measPickBest', S.score); }
-    return `<section class="card sh-finish"><span class="win-goat" aria-hidden="true">🐐</span><h2>${S.score} из ${S.qs.length}!</h2>
+    return `<section class="card sh-finish"><span class="win-goat" aria-hidden="true">★</span><h2>${S.score} из ${S.qs.length}!</h2>
       <p class="rule">${S.score === S.qs.length ? 'Ты отлично чувствуешь размеры!' : 'Запоминай опоры: ноготь мизинца — 1 см, большой шаг — 1 м, пакет сахара — 1 кг, пакет молока — 1 л.'}</p>
       <p class="tip-ink">Лучший результат: ${Math.max(best, S.score)} из ${S.qs.length}.</p>
       <div class="row"><button class="btn mint" data-act="mppk" data-v="again">Ещё раунд →</button></div></section>`;
@@ -5512,7 +5603,7 @@ function nonHTML(){
   const S = P.non, best = store.get('measNonBest', 0);
   if (S.i >= S.qs.length){
     if (!S.saved){ S.saved = true; if (S.score > best) store.set('measNonBest', S.score); }
-    return `<section class="card sh-finish"><span class="win-goat" aria-hidden="true">🐐</span><h2>${S.score} из ${S.qs.length} без ошибок!</h2>
+    return `<section class="card sh-finish"><span class="win-goat" aria-hidden="true">★</span><h2>${S.score} из ${S.qs.length} без ошибок!</h2>
       <p class="rule">${S.score === S.qs.length ? 'Ни одной нелепицы не пропустил!' : 'Перед тем как писать единицу, представь предмет: он большой или маленький?'}</p>
       <p class="tip-ink">Лучший результат: ${Math.max(best, S.score)} из ${S.qs.length}.</p>
       <div class="row"><button class="btn mint" data-act="mpnon" data-v="again">Ещё раунд →</button></div></section>`;
@@ -5520,7 +5611,7 @@ function nonHTML(){
   const q = S.qs[S.i], bad = q.lines.find(l => l.bad);
   let body;
   if (S.stage === 1){
-    body = `<p class="rule">🐐 Гоша написал в тетради. Одна запись — нелепица. <b>Нажми на неё.</b></p>
+    body = `<p class="rule">📝 Рэй написал в тетради. Одна запись — нелепица. <b>Нажми на неё.</b></p>
       <div class="mp-lines">${q.lines.map((l, i) => `<button class="mp-line${S.tapped && S.tapped.includes(i) ? ' wrong' : ''}" data-act="mpnon" data-v="l${i}">${lineTxt(l)}</button>`).join('')}</div>
       ${S.msg ? `<div class="trap">${S.msg}</div>` : ''}`;
   } else {
@@ -5532,7 +5623,7 @@ function nonHTML(){
       ${p ? `<div class="${p === it[3] ? 'u-lesson' : 'sh-fb'}">${p === it[3] ? `<p>Верно! ${it[1]} — ${it[2]} ${it[3]}.</p>` : `<p>${it[6][p] || `${it[2]} ${uS(p, it[2])} — не подходит.`}</p><p>Правильно: <b>${it[2]} ${it[3]}</b>.</p>`}<p>${anchor(it[3])}</p></div>
         <div class="row"><button class="btn mint" data-act="mpnon" data-v="next">${S.i + 1 < S.qs.length ? 'Дальше →' : 'Итог →'}</button></div>` : ''}`;
   }
-  return `<section class="card"><div class="tk-lab-head"><h2>Нелепицы Гоши</h2><span class="u-count">${S.i + 1} / ${S.qs.length} · ✓ ${S.score}</span></div>${body}</section>`;
+  return `<section class="card"><div class="tk-lab-head"><h2>Нелепицы Рэя</h2><span class="u-count">${S.i + 1} / ${S.qs.length} · ✓ ${S.score}</span></div>${body}</section>`;
 }
 ACTIONS.mpnon = (t) => {
   const S = P.non, v = t.dataset.v;
@@ -5580,7 +5671,7 @@ function ordHTML(){
   const S = P.ord, best = store.get('measOrdBest', 0), total = S.qs.filter(q => !q.re).length;
   if (S.i >= S.qs.length){
     if (!S.saved){ S.saved = true; if (S.score > best) store.set('measOrdBest', S.score); }
-    return `<section class="card sh-finish"><span class="win-goat" aria-hidden="true">🐐</span><h2>${S.score} из ${total}!</h2>
+    return `<section class="card sh-finish"><span class="win-goat" aria-hidden="true">★</span><h2>${S.score} из ${total}!</h2>
       <p class="rule">${S.score === total ? 'Все ряды верные!' : 'Секрет: переведи всё в самую мелкую мерку — и сразу видно, что больше.'}</p>
       <p class="tip-ink">Лучший результат: ${Math.max(best, S.score)} из ${total}.</p>
       <div class="row"><button class="btn mint" data-act="mpord" data-v="again">Ещё раунд →</button></div></section>`;
@@ -5626,3 +5717,5 @@ globalThis.__measTest = { convGen, simpleGen, compGen, cmpGen, cmpRound, cmpExpl
 
 render();
 </script>
+</body>
+</html>
